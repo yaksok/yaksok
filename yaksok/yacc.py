@@ -1,5 +1,6 @@
 # coding: utf8
 import ast
+import logging
 
 from lex import tokens
 
@@ -93,7 +94,7 @@ def p_error(t):
 
 
 import ply.yacc
-ply.yacc.yacc()
+ply.yacc.yacc(debug=False)
 
 
 def parse(code, interactive=False):
@@ -107,5 +108,5 @@ def parse(code, interactive=False):
 def compile_code(code, file_name=None):
     interactive = file_name is None
     tree = parse(code, interactive=interactive)
-    print(ast.dump(tree))
+    logging.debug(ast.dump(tree))
     return compile(tree, file_name or '<string>', 'single' if interactive else 'exec')

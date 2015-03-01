@@ -1,3 +1,4 @@
+import argparse
 import sys
 
 import yacc
@@ -11,10 +12,16 @@ yaksok_globals = {
 
 
 def main():
-    if len(sys.argv) > 1:
-        file_name = sys.argv[1]
-        code = open(file_name).read()
-        code = yacc.compile_code(code, file_name=file_name)
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument('file_name', nargs='?')
+    argparser.add_argument('-d', '--debug', action='store_true')
+    args = argparser.parse_args()
+    if args.debug:
+        import logging
+        logging.basicConfig(level=logging.DEBUG)
+    if args.file_name:
+        code = open(args.file_name).read()
+        code = yacc.compile_code(code, file_name=args.file_name)
         exec(code, yaksok_globals)
         return
     while True:
