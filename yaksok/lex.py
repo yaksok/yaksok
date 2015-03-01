@@ -1,13 +1,25 @@
 # coding: utf8
 
 tokens = (
+    'INTEGER',
     'STRING_LITERAL',
     'IDENTIFIER',
+
+    'PLUS',
+    'MINUS',
+    'MULT',
+    'DIV',
 )
 
+t_INTEGER = r'[0-9]+'
 t_STRING_LITERAL = r'"[^\n\\]*"'
 
 t_IDENTIFIER = r'[_a-zA-Z가-힣][a-zA-Z가-힣0-9_]*'
+
+t_PLUS = r'\+'
+t_MINUS = r'\-'
+t_MULT = r'\*'
+t_DIV = r'/'
 
 t_ignore = ' \t'
 
