@@ -18,6 +18,8 @@ tokens = [
     'STRING_LITERAL',
     'IDENTIFIER',
 
+    'ASSIGN',
+
     'PLUS',
     'MINUS',
     'MULT',
@@ -59,6 +61,7 @@ def t_IDENTIFIER(t):
     t.type = reserved.get(t.value, 'IDENTIFIER')
     return t
 
+t_ASSIGN = r':'
 
 t_PLUS = r'\+'
 t_MINUS = r'\-'

@@ -69,6 +69,16 @@ def p_if_stmt(t):
     t[0].col_offset = -1  # XXX
 
 
+def p_assign_stmt(t):
+    '''stmt : IDENTIFIER ASSIGN expression'''
+    lhs = ast.Name(t[1], ast.Store())
+    lhs.lineno = t.lineno(1)
+    lhs.col_offset = -1  # XXX
+    t[0] = ast.Assign([lhs], t[3])
+    t[0].lineno = t.lineno(1)
+    t[0].col_offset = -1  # XXX
+
+
 def p_expression_stmt(t):
     '''stmt : expression NEWLINE'''
     t[0] = ast.Expr(t[1])
@@ -143,6 +153,13 @@ def p_atom_true(t):
 def p_atom_false(t):
     '''atom : FALSE'''
     t[0] = ast.NameConstant(False)
+    t[0].lineno = t.lineno(1)
+    t[0].col_offset = -1  # XXX
+
+
+def p_atom_identifier(t):
+    '''atom : IDENTIFIER'''
+    t[0] = ast.Name(t[1], ast.Load())
     t[0].lineno = t.lineno(1)
     t[0].col_offset = -1  # XXX
 
