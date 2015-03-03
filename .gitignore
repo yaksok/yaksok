@@ -1,0 +1,4 @@
+.exrc
+__pycache__
+.*.swp
+parsetab.py
