@@ -3,7 +3,7 @@
 import ply.lex
 
 TAB_SIZE = 8
-must_indent_group = set(["THEN"])
+must_indent_group = set(["THEN", "LOOP"])
 
 reserved = {
     '만약':'IF',
@@ -11,6 +11,7 @@ reserved = {
     '이라면':'THEN',
     '참':'TRUE',
     '거짓':'FALSE',
+    '반복':'LOOP',
 }
 
 tokens = [

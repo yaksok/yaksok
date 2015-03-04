@@ -61,6 +61,19 @@ def p_suite(t):
     else:
         t[0] = t[3]
 
+def p_loop_stmt(t):
+    '''stmt : expression IDENTIFIER IDENTIFIER IDENTIFIER LOOP suite'''
+    if t[2] != '의' or t[4] != '마다':
+        print("구문 오류입니다: {} {} {} {}".format(t[2], t[3], t[4], t[5]))
+        print("\t'~ 의 ~ 마다 반복' 꼴이어야 합니다.")
+        raise SyntaxError
+    for_var = ast.Name(t[3], ast.Store())
+    for_var.lineno = t.lineno(3)
+    for_var.col_offset = -1 # XXX
+
+    t[0] = ast.For(for_var, t[1], t[6], [])
+    t[0].lineno = t.lineno(1)
+    t[0].col_offset = -1  # XXX
 
 def p_if_stmt(t):
     '''stmt : IF expression THEN suite'''
