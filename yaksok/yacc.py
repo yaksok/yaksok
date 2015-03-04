@@ -139,7 +139,8 @@ def p_arith_expr_atom(t):
 
 def p_atom(t):
     '''atom : num
-            | str'''
+            | str
+            | list'''
     t[0] = t[1]
 
 
@@ -176,6 +177,28 @@ def p_str(t):
     t[0] = ast.Str(eval(t[1]))
     t[0].lineno = t.lineno(1)
     t[0].col_offset = -1  # XXX
+
+
+def p_atom_list(t):
+    '''list : LSQUARE RSQUARE
+            | LSQUARE list_items RSQUARE'''
+    if len(t) == 3:
+        t[0] = ast.List([], ast.Load())
+        t[0].lineno = t.lineno(1)
+        t[0].col_offset = -1  # XXX
+    else:
+        t[0] = ast.List(t[2], ast.Load())
+        t[0].lineno = t.lineno(1)
+        t[0].col_offset = -1  # XXX
+
+
+def p_list_items(t):
+    '''list_items : expression
+                  | list_items COMMA expression'''
+    if len(t) == 2:
+        t[0] = [t[1]]
+    else:
+        t[0] = t[1] + [t[3]]
 
 
 def p_error(t):

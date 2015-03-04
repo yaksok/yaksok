@@ -19,6 +19,7 @@ tokens = [
     'IDENTIFIER',
 
     'ASSIGN',
+    'COMMA',
 
     'PLUS',
     'MINUS',
@@ -31,6 +32,8 @@ tokens = [
 
     'LPAR',
     'RPAR',
+    'LSQUARE',
+    'RSQUARE',
 
     'NEWLINE',
     'INDENT',
@@ -62,6 +65,7 @@ def t_IDENTIFIER(t):
     return t
 
 t_ASSIGN = r':'
+t_COMMA = r','
 
 t_PLUS = r'\+'
 t_MINUS = r'\-'
@@ -81,6 +85,18 @@ def t_newline(t):
     t.type = 'NEWLINE'
     if t.lexer.paren_count == 0:
         return t
+
+
+def t_LSQUARE(t):
+    r'\['
+    t.lexer.paren_count += 1
+    return t
+
+
+def t_RSQUARE(t):
+    r'\]'
+    t.lexer.paren_count -= 1
+    return t
 
 
 def t_LPAR(t):
