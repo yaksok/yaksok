@@ -1,6 +1,7 @@
 import glob
 import os
 import subprocess
+import traceback
 
 
 patterns = [
@@ -15,8 +16,11 @@ for file_path in sum((glob.glob(_) for _ in patterns), []):
         print('no .out file!')
         continue
     target = open(target_file_path, 'rb').read()
-    output = subprocess.check_output(
-        ['python3', 'yaksok/yaksok.py', file_path])
+    try:
+        output = subprocess.check_output(
+            ['python3', 'yaksok/yaksok.py', file_path])
+    except subprocess.CalledProcessError:
+        print('error!')
     if output == target:
         print('success!')
     else:
