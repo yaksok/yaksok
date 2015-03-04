@@ -16,11 +16,18 @@ for file_path in sum((glob.glob(_) for _ in patterns), []):
         print('no .out file!')
         continue
     target = open(target_file_path, 'rb').read()
-    try:
-        output = subprocess.check_output(
-            ['python3', 'yaksok/yaksok.py', file_path])
-    except subprocess.CalledProcessError:
-        print('error!')
+    proc = subprocess.Popen(
+        ['python3', 'yaksok/yaksok.py', file_path],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+    output = proc.stdout.read()
+    error = proc.stderr.read()
+    proc.communicate()
+    if error or proc.returncode:
+        print('error! (status code {})'.format(proc.returncode))
+        print(error.decode('utf8', 'ignore'))
+        print('=' * 32)
+        continue
     if output == target:
         print('success!')
     else:
