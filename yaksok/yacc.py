@@ -127,14 +127,54 @@ def p_arith_expr(t):
     t[0].col_offset = -1  # XXX
 
 
-def p_arith_expr_paren(t):
-    '''arith_expr : LPAR expression RPAR'''
+def make_add_one(t, idx):
+    one = ast.Num(1)
+    one.lineno = t.lineno(idx)
+    one.col_offset = -1  # XXX
+
+    add_one = ast.BinOp(t[idx], binop_cls['+'](), one)
+    add_one.lineno = t.lineno(idx)
+    add_one.col_offset = -1  # XXX
+
+    return add_one
+
+
+def make_sub_one(t, idx):
+    one = ast.Num(1)
+    one.lineno = t.lineno(idx)
+    one.col_offset = -1  # XXX
+
+    add_one = ast.BinOp(t[idx], binop_cls['-'](), one)
+    add_one.lineno = t.lineno(idx)
+    add_one.col_offset = -1  # XXX
+
+    return add_one
+
+
+def p_subscript(t):
+    '''subscript : LSQUARE expression RSQUARE'''
+    index = ast.Index(make_sub_one(t, 2))
+    index.lineno = t.lineno(2)
+    index.col_offset = -1  # XXX
+
+    t[0] = ast.Subscript(t[-1], index, ast.Load())
+    t[0].lineno = t.lineno(-1)
+    t[0].col_offset = -1  # XXX
+
+
+def p_trailers_subscript(t):
+    '''trailers : subscript trailers'''
     t[0] = t[2]
 
 
+def p_trailers_empty(t):
+    '''trailers : empty'''
+    t[0] = t[-1]
+
+
 def p_arith_expr_atom(t):
-    '''arith_expr : atom'''
-    t[0] = t[1]
+    '''arith_expr : atom trailers'''
+    t[0] = t[2]
 
 
 def p_atom(t):
@@ -199,6 +239,15 @@ def p_list_items(t):
         t[0] = [t[1]]
     else:
         t[0] = t[1] + [t[3]]
+
+
+def p_atom_paren(t):
+    '''atom : LPAR expression RPAR'''
+    t[0] = t[2]
+
+
+def p_empty(t):
+    '''empty : '''
 
 
 def p_error(t):

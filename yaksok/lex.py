@@ -57,7 +57,7 @@ def t_WS(t):
 
 
 t_INTEGER = r'[0-9]+'
-t_STRING_LITERAL = r'"[^\n\\]*"'
+t_STRING_LITERAL = r'"[^\n\\\"]*"'
 
 def t_IDENTIFIER(t):
     r'[_a-zA-Z가-힣][a-zA-Z가-힣0-9_]*'
