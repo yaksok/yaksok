@@ -7,6 +7,7 @@ from lex import tokens, IndentLexer
 
 precedence = (
     ("left", "EQ", "GT", "LT"),
+    ("left", "TILDE"),
     ("left", "PLUS", "MINUS"),
     ("left", "MULT", "DIV"),
 )
@@ -166,13 +167,22 @@ def make_sub_one(t, idx):
 
 def p_subscript(t):
     '''subscript : LSQUARE expression RSQUARE'''
-    index = ast.Index(make_sub_one(t, 2))
-    index.lineno = t.lineno(2)
-    index.col_offset = -1  # XXX
+    #index = ast.Index(make_sub_one(t, 2))
+    #index.lineno = t.lineno(2)
+    #index.col_offset = -1  # XXX
+    index = t[2]
 
-    t[0] = ast.Subscript(t[-1], index, ast.Load())
-    t[0].lineno = t.lineno(-1)
+    func = ast.Name('____subscript', ast.Load())
+    func.lineno = t.lineno(2)
+    func.col_offset = -1  # XXX
+
+    t[0] = ast.Call(func, [t[-1], index], [], None, None)
+    t[0].lineno = t.lineno(2)
     t[0].col_offset = -1  # XXX
+
+    #t[0] = ast.Subscript(t[-1], index, ast.Load())
+    #t[0].lineno = t.lineno(-1)
+    #t[0].col_offset = -1  # XXX
 
 
 def p_trailers_subscript(t):
@@ -193,7 +203,8 @@ def p_arith_expr_atom(t):
 def p_atom(t):
     '''atom : num
             | str
-            | list'''
+            | list
+            | range'''
     t[0] = t[1]
 
 
@@ -229,6 +240,17 @@ def p_str(t):
     '''str : STRING_LITERAL'''
     t[0] = ast.Str(eval(t[1]))
     t[0].lineno = t.lineno(1)
+    t[0].col_offset = -1  # XXX
+
+
+def p_range(t):
+    '''range : arith_expr TILDE arith_expr'''
+    func = ast.Name('____range', ast.Load())
+    func.lineno = t.lineno(2)
+    func.col_offset = -1  # XXX
+    add_one = make_add_one(t, 3)
+    t[0] = ast.Call(func, [t[1], add_one], [], None, None)
+    t[0].lineno = t.lineno(2)
     t[0].col_offset = -1  # XXX
 
 

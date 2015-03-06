@@ -21,6 +21,7 @@ tokens = [
 
     'ASSIGN',
     'COMMA',
+    'TILDE',
 
     'PLUS',
     'MINUS',
@@ -67,6 +68,7 @@ def t_IDENTIFIER(t):
 
 t_ASSIGN = r':'
 t_COMMA = r','
+t_TILDE = r'~'
 
 t_PLUS = r'\+'
 t_MINUS = r'\-'

@@ -3,11 +3,10 @@ import sys
 
 import yacc
 
+import bootbakyi
 
 yaksok_globals = {
-    '__builtins__': {
-        '보여주기': print,
-    },
+    '__builtins__':{k:getattr(bootbakyi, k) for k in dir(bootbakyi)}
 }
 
 
