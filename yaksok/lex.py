@@ -1,11 +1,14 @@
 # coding: utf8
 
 import ply.lex
+import logging
 
 TAB_SIZE = 8
 must_indent_group = set(["THEN", "LOOP"])
+must_indent_next_line_group = set(["DEFUN"])
 
 reserved = {
+    '약속':'DEFUN',
     '만약':'IF',
     '이면':'THEN',
     '이라면':'THEN',
@@ -53,8 +56,9 @@ def t_comment(t):
 
 def t_WS(t):
     r'[ \t]+'
-    if t.lexer.at_line_start and t.lexer.paren_count == 0:
+    if t.lexer.at_line_start and t.lexer.paren_count == 0 or t.lexer.inside_defun:
         t.value = t.value.replace('\t', ' '*TAB_SIZE)
+        t.inside_defun = t.lexer.inside_defun
         return t
 
 
@@ -64,6 +68,8 @@ t_STRING_LITERAL = r'"[^\n\\\"]*"'
 def t_IDENTIFIER(t):
     r'[_a-zA-Z가-힣][a-zA-Z가-힣0-9_]*'
     t.type = reserved.get(t.value, 'IDENTIFIER')
+    if t.type == 'DEFUN':
+        t.lexer.inside_defun = True
     return t
 
 t_ASSIGN = r':'
@@ -86,6 +92,8 @@ def t_newline(t):
     r'\n+'
     t.lexer.lineno += t.value.count("\n")
     t.type = 'NEWLINE'
+    if t.lexer.inside_defun:
+        t.lexer.inside_defun = False
     if t.lexer.paren_count == 0:
         return t
 
@@ -143,7 +151,8 @@ MUST_INDENT = 2
 def track_tokens_filter(lexer, tokens):
     lexer.at_line_start = at_line_start = True
     indent = NO_INDENT
-    saw_colon = False
+    must_indent_next_line = False
+
     for token in tokens:
         token.at_line_start = at_line_start
 
@@ -154,13 +163,15 @@ def track_tokens_filter(lexer, tokens):
 
         elif token.type == "NEWLINE":
             at_line_start = True
-            if indent == MAY_INDENT:
+            if indent == MAY_INDENT or must_indent_next_line:
                 indent = MUST_INDENT
+                must_indent_next_line = False
             token.must_indent = False
 
         elif token.type == "WS":
-            assert token.at_line_start == True
-            at_line_start = True
+            assert token.at_line_start == True or token.inside_defun
+            if token.at_line_start:
+                at_line_start = True
             token.must_indent = False
 
         else:
@@ -171,6 +182,8 @@ def track_tokens_filter(lexer, tokens):
                 token.must_indent = False
             at_line_start = False
             indent = NO_INDENT
+            if token.type in must_indent_next_line_group:
+                must_indent_next_line = True
 
         yield token
         lexer.at_line_start = at_line_start
@@ -181,6 +194,7 @@ def _new_token(type, lineno):
     tok.type = type
     tok.value = None
     tok.lineno = lineno
+    tok.lexpos = -1
     return tok
 
 
@@ -202,19 +216,26 @@ def indentation_filter(tokens):
     depth = 0
     prev_was_ws = False
     for token in tokens:
-##        if 1:
-##            print "Process", token,
-##            if token.at_line_start:
-##                print "at_line_start",
-##            if token.must_indent:
-##                print "must_indent",
-##            print
+        if logging.getLogger().isEnabledFor(logging.DEBUG):
+            msg = 'Process {} '.format(token)
+            if token.at_line_start:
+                msg += 'at_line_start '
+            if token.must_indent:
+                msg += 'must_indent '
+            try:
+                if token.inside_defun:
+                    msg += 'inside_defun '
+            except:
+                pass
+            msg += str(levels) + ' '
+            msg += str(depth) + ' '
+            logging.debug(msg)
 
         # WS only occurs at the start of the line
         # There may be WS followed by NEWLINE so
         # only track the depth here.  Don't indent/dedent
         # until there's something real.
-        if token.type == "WS":
+        if token.type == "WS" and not token.inside_defun:
             assert depth == 0
             depth = len(token.value)
             prev_was_ws = True
@@ -248,7 +269,7 @@ def indentation_filter(tokens):
                 # At the same level
                 pass
             elif depth > levels[-1]:
-                raise IndentationError("indentation increase but not in new block")
+                raise IndentationError("indentation increase but not in new block :" + str(levels))
             else:
                 # Back up; but only if it matches a previous level
                 try:
@@ -281,6 +302,9 @@ def filter(lexer, add_endmarker = True):
         lineno = 1
         if token is not None:
             lineno = token.lineno
+        tok = _new_token("NEWLINE", lineno)
+        tok.value ='\n'
+        yield tok
         yield _new_token("ENDMARKER", lineno)
 
 
@@ -291,6 +315,7 @@ class IndentLexer(object):
 
     def input(self, s, add_endmarker=True):
         self.lexer.paren_count = 0
+        self.lexer.inside_defun = False
         self.lexer.input(s)
         self.token_stream = filter(self.lexer, add_endmarker)
 

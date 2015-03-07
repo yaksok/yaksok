@@ -3,6 +3,7 @@ import ast
 import logging
 
 from .lex import tokens, IndentLexer
+from .ast_tool import transform
 
 
 precedence = (
@@ -22,6 +23,24 @@ binop_cls = {
     '=': ast.Eq,
 }
 
+_gen_sym_idx = 0
+def gen_sym():
+    global _gen_sym_idx
+    _gen_sym_idx += 1
+    return '____{}gs____gs'.format(_gen_sym_idx)
+
+
+def flatten(l):
+    def flatten_iter(l):
+        if isinstance(l, list):
+            for x in l:
+                for y in flatten_iter(x):
+                    yield y
+        else:
+            yield l
+    return list(flatten_iter(l))
+
+assert flatten([[1,2,[3,4],5],[6,7]]) == [1,2,3,4,5,6,7]
 
 def p_file_input_end(t):
     """file_input_end : file_input ENDMARKER
@@ -40,27 +59,92 @@ def p_file_input(t):
             t[0] = []
     else:
         if len(t) == 3:
-            t[0] = t[1]+[t[2]]
+            t[0] = flatten(t[1]+[t[2]])
         else:
-            t[0] = [t[1]]
+            t[0] = flatten([t[1]])
 
 
 def p_stmts(t):
     '''stmts : stmts stmt
              | stmt'''
     if len(t) == 3:
+        t[0] = flatten(t[1] + [t[2]])
+    else:
+        t[0] = flatten([t[1]])
+
+
+def p_suite(t):
+    '''suite : NEWLINE INDENT stmts DEDENT'''
+    # suite : stmt NEWLINE 는 사용 불가, 무조건 다음 줄에
+    if len(t) == 2:
+        t[0] = [t[1]]
+    else:
+        t[0] = t[3]
+
+
+def p_defun_str(t):
+    '''defun_str : STRING_LITERAL'''
+    if '\n' in t[1]:
+        print("구문 오류입니다.")
+        print("줄바꿈이 들어간 약속은 만들 수 없습니다.")
+        raise SyntaxError
+    t[0] = t[1]
+
+
+def p_function_description_item_ws(t):
+    '''function_description_item : WS'''
+    t[0] = ('WS', t[1])
+
+
+def p_function_description_item_identifier(t):
+    '''function_description_item : IDENTIFIER'''
+    t[0] = ('IDENTIFIER', t[1])
+
+
+def p_function_description_item_str(t):
+    '''function_description_item : defun_str'''
+    t[0] = ('STR', t[1])
+
+
+def p_function_description(t):
+    '''function_description : function_description function_description_item
+                            | function_description_item'''
+    if len(t) == 3:
         t[0] = t[1] + [t[2]]
     else:
         t[0] = [t[1]]
 
 
-def p_suite(t):
-    '''suite : stmt NEWLINE
-             | NEWLINE INDENT stmts DEDENT'''
-    if len(t) == 2:
-        t[0] = [t[1]]
-    else:
-        t[0] = t[3]
+def validate_function_description(fd_list):
+    for idx, (ty, token) in enumerate(fd_list):
+        if ty == "STR":
+            if (idx > 0 and idx + 1< len(fd_list) and
+                    fd_list[idx-1][0] != 'WS' and fd_list[idx+1][0] != 'WS'):
+                print('구문 오류입니다.')
+                print('문자열 양 옆으로 빈 칸 없이 붙여쓸 수 없습니다.')
+                raise SyntaxError
+
+
+def p_function_def_stmt(t):
+    '''stmt : DEFUN WS function_description suite'''
+    proto = t[3]
+    validate_function_description(proto)
+    arg_list = ''.join(item[1] for item in proto if item[0] == 'IDENTIFIER')
+    internal_function_name = gen_sym()
+
+    codes = '''
+def {internal_function_name}({arg_list}):
+    <:suite:>
+try:
+    ____functions
+except:
+    ____functions = []
+
+____functions.append(({internal_function_name}, {proto}))
+'''.format(**locals())
+
+    t[0] = transform(codes, dict(suite=t[4]), expose=True)
+
 
 def p_loop_stmt(t):
     '''stmt : expression IDENTIFIER IDENTIFIER IDENTIFIER LOOP suite'''
@@ -75,6 +159,7 @@ def p_loop_stmt(t):
     t[0] = ast.For(for_var, t[1], t[6], [])
     t[0].lineno = t.lineno(1)
     t[0].col_offset = -1  # XXX
+
 
 def p_if_stmt(t):
     '''stmt : IF expression THEN suite'''
