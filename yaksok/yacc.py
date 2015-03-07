@@ -84,7 +84,7 @@ def p_if_stmt(t):
 
 
 def p_assign_stmt(t):
-    '''stmt : IDENTIFIER ASSIGN expression'''
+    '''stmt : IDENTIFIER ASSIGN expression NEWLINE'''
     lhs = ast.Name(t[1], ast.Store())
     lhs.lineno = t.lineno(1)
     lhs.col_offset = -1  # XXX
@@ -287,7 +287,7 @@ def p_empty(t):
 
 def p_error(t):
     if t:
-        print("구문 오류입니다: {}".format(repr(t.value)))
+        print("구문 오류입니다({}번째 줄): {}".format(t.lineno, repr(t.value)))
     else:
         print("구문 오류입니다.")
 
