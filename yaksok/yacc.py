@@ -84,13 +84,29 @@ def p_if_stmt(t):
 
 
 def p_assign_stmt(t):
-    '''stmt : IDENTIFIER ASSIGN expression NEWLINE'''
-    lhs = ast.Name(t[1], ast.Store())
-    lhs.lineno = t.lineno(1)
-    lhs.col_offset = -1  # XXX
-    t[0] = ast.Assign([lhs], t[3])
+    '''stmt : target ASSIGN expression NEWLINE'''
+    t[0] = ast.Assign(t[1], t[3])
     t[0].lineno = t.lineno(1)
     t[0].col_offset = -1  # XXX
+
+
+def p_target(t):
+    '''target : IDENTIFIER'''
+    identifier = ast.Name(t[1], ast.Store())
+    identifier.lineno = t.lineno(1)
+    identifier.col_offset = -1  # XXX
+    t[0] = [identifier]
+
+
+def p_target_subscription(t):
+    '''target : primary LSQUARE expression RSQUARE'''
+    index = ast.Index(make_sub_one(t, 3))
+    index.lineno = t.lineno(3)
+    index.col_offset = -1  # XXX
+    subscription = ast.Subscript(t[1], index, ast.Store())
+    subscription.lineno = t.lineno(1)
+    subscription.col_offset = -1  # XXX
+    t[0] = [subscription]
 
 
 def p_expression_stmt(t):
@@ -165,39 +181,35 @@ def make_sub_one(t, idx):
     return add_one
 
 
-def p_subscript(t):
-    '''subscript : LSQUARE expression RSQUARE'''
+def p_arith_expr_primary(t):
+    '''arith_expr : primary'''
+    t[0] = t[1]
+
+
+def p_primary(t):
+    '''primary : atom
+               | subscription'''
+    t[0] = t[1]
+
+
+def p_subscription(t):
+    '''subscription : primary LSQUARE expression RSQUARE'''
     #index = ast.Index(make_sub_one(t, 2))
     #index.lineno = t.lineno(2)
     #index.col_offset = -1  # XXX
-    index = t[2]
+    index = t[3]
 
     func = ast.Name('____subscript', ast.Load())
-    func.lineno = t.lineno(2)
+    func.lineno = t.lineno(1)
     func.col_offset = -1  # XXX
 
-    t[0] = ast.Call(func, [t[-1], index], [], None, None)
-    t[0].lineno = t.lineno(2)
+    t[0] = ast.Call(func, [t[1], index], [], None, None)
+    t[0].lineno = t.lineno(1)
     t[0].col_offset = -1  # XXX
 
     #t[0] = ast.Subscript(t[-1], index, ast.Load())
     #t[0].lineno = t.lineno(-1)
     #t[0].col_offset = -1  # XXX
-
-
-def p_trailers_subscript(t):
-    '''trailers : subscript trailers'''
-    t[0] = t[2]
-
-
-def p_trailers_empty(t):
-    '''trailers : empty'''
-    t[0] = t[-1]
-
-
-def p_arith_expr_atom(t):
-    '''arith_expr : atom trailers'''
-    t[0] = t[2]
 
 
 def p_atom(t):
@@ -279,10 +291,6 @@ def p_list_items(t):
 def p_atom_paren(t):
     '''atom : LPAR expression RPAR'''
     t[0] = t[2]
-
-
-def p_empty(t):
-    '''empty : '''
 
 
 def p_error(t):
