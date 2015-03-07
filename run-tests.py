@@ -17,7 +17,7 @@ for file_path in sum((glob.glob(_) for _ in patterns), []):
         continue
     target = open(target_file_path, 'rb').read()
     proc = subprocess.Popen(
-        ['python3', 'yaksok/yaksok.py', file_path],
+        ['python3', '-m', 'yaksok', file_path],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     output = proc.stdout.read()

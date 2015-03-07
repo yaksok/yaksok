@@ -1,13 +1,20 @@
 import argparse
 import sys
 
-import yacc
+from . import yacc
 
-import bootbakyi
+from . import bootbakyi
 
 yaksok_globals = {
     '__builtins__':{k:getattr(bootbakyi, k) for k in dir(bootbakyi)}
 }
+
+
+def run_code(code, file_name = None):
+    code = yacc.compile_code(code, file_name=file_name)
+    locals_dict = {}
+    exec(code, yaksok_globals, locals_dict)
+    return locals_dict
 
 
 def main():
@@ -20,8 +27,7 @@ def main():
         logging.basicConfig(level=logging.DEBUG)
     if args.file_name:
         code = open(args.file_name).read()
-        code = yacc.compile_code(code, file_name=args.file_name)
-        exec(code, yaksok_globals)
+        run_code(code, args.file_name)
         return
     while True:
         try:

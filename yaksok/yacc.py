@@ -2,7 +2,7 @@
 import ast
 import logging
 
-from lex import tokens, IndentLexer
+from .lex import tokens, IndentLexer
 
 
 precedence = (
