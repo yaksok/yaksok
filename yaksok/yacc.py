@@ -7,7 +7,7 @@ from .ast_tool import transform
 
 
 precedence = (
-    ("nonassoc", "EQ", "GT", "LT"),
+    ("nonassoc", "EQ", "GT", "LT", "NE"),
     ("left", "TILDE"),
     ("left", "PLUS", "MINUS"),
     ("left", "MULT", "DIV"),
@@ -21,6 +21,7 @@ binop_cls = {
     '>': ast.Gt,
     '<': ast.Lt,
     '=': ast.Eq,
+    '!=': ast.NotEq,
 }
 
 _gen_sym_idx = 0
@@ -137,6 +138,12 @@ def validate_function_description(fd_list):
                 #report_error(t, '구문 오류입니다.')
                 #report_error(t, '\t문자열 양 옆으로 빈 칸 없이 붙여쓸 수 없습니다.')
                 #raise SyntaxError
+
+
+def p_function_return_stmt(t):
+    '''stmt : END_BLOCK NEWLINE'''
+    t[0] = transform('return 결과', {}, expose=True)[0]
+    t[0].lineno = t.lineno(1)
 
 
 def p_function_def_stmt(t):
@@ -284,6 +291,7 @@ def p_call(t):
 
 def p_logic_expr(t):
     '''logic_expr : arith_expr EQ arith_expr
+                  | arith_expr NE arith_expr
                   | arith_expr GT arith_expr
                   | arith_expr LT arith_expr'''
     t[0] = ast.Compare(t[1], [binop_cls[t[2]]()], [t[3]])

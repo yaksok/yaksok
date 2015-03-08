@@ -17,6 +17,7 @@ reserved = {
     '참':'TRUE',
     '거짓':'FALSE',
     '반복':'LOOP',
+    '끝':'END_BLOCK',
 }
 
 tokens = [
@@ -36,6 +37,7 @@ tokens = [
     'EQ',
     'GT',
     'LT',
+    'NE',
 
     'LPAR',
     'RPAR',
@@ -86,6 +88,7 @@ t_DIV = r'/'
 t_EQ = '='
 t_GT = '>'
 t_LT = '<'
+t_NE = '!='
 
 #t_ignore = ' \t'
 
