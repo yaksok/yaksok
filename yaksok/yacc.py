@@ -7,7 +7,7 @@ from .ast_tool import transform
 
 
 precedence = (
-    ("left", "EQ", "GT", "LT"),
+    ("nonassoc", "EQ", "GT", "LT"),
     ("left", "TILDE"),
     ("left", "PLUS", "MINUS"),
     ("left", "MULT", "DIV"),
@@ -41,6 +41,13 @@ def flatten(l):
     return list(flatten_iter(l))
 
 assert flatten([[1,2,[3,4],5],[6,7]]) == [1,2,3,4,5,6,7]
+
+errors = []
+def report_error(t, msg):
+    try:
+        errors.append((t.lineno, msg))
+    except:
+        errors.append((-1, msg))
 
 def p_file_input_end(t):
     """file_input_end : file_input ENDMARKER
@@ -85,8 +92,8 @@ def p_suite(t):
 def p_defun_str(t):
     '''defun_str : STRING_LITERAL'''
     if '\n' in t[1]:
-        print("구문 오류입니다.")
-        print("줄바꿈이 들어간 약속은 만들 수 없습니다.")
+        report_error(t, "구문 오류입니다.")
+        report_error(t, "\t줄바꿈이 들어간 약속은 만들 수 없습니다.")
         raise SyntaxError
     t[0] = t[1]
 
@@ -103,7 +110,7 @@ def p_function_description_item_identifier(t):
 
 def p_function_description_item_str(t):
     '''function_description_item : defun_str'''
-    t[0] = ('STR', t[1])
+    t[0] = ('STR', t[1][1:-1])
 
 
 def p_function_description(t):
@@ -118,23 +125,35 @@ def p_function_description(t):
 def validate_function_description(fd_list):
     for idx, (ty, token) in enumerate(fd_list):
         if ty == "STR":
-            if (idx > 0 and idx + 1< len(fd_list) and
-                    fd_list[idx-1][0] != 'WS' and fd_list[idx+1][0] != 'WS'):
-                print('구문 오류입니다.')
-                print('문자열 양 옆으로 빈 칸 없이 붙여쓸 수 없습니다.')
+            if (idx + 1 < len(fd_list) and 
+                    fd_list[idx+1][0] != 'WS'):
+                report_error(t, '구문 오류입니다.')
+                report_error(t, '\t약속을 만들때, 문자열 다음은 반드시 빈 칸이어야 합니다.')
                 raise SyntaxError
+
+            # 앞에는 무조건 띄우는 걸로 합시다
+            #if (idx > 0 and idx + 1 < len(fd_list) and
+                    #fd_list[idx-1][0] != 'WS' and fd_list[idx+1][0] != 'WS'):
+                #report_error(t, '구문 오류입니다.')
+                #report_error(t, '\t문자열 양 옆으로 빈 칸 없이 붙여쓸 수 없습니다.')
+                #raise SyntaxError
 
 
 def p_function_def_stmt(t):
     '''stmt : DEFUN WS function_description suite'''
     proto = t[3]
+    while proto[-1][0] == 'WS':
+        proto.pop()
+
     validate_function_description(proto)
-    arg_list = ''.join(item[1] for item in proto if item[0] == 'IDENTIFIER')
+    arg_list = ','.join(item[1] for item in proto if item[0] == 'IDENTIFIER')
     internal_function_name = gen_sym()
 
     codes = '''
 def {internal_function_name}({arg_list}):
+    결과 = None
     <:suite:>
+    return 결과
 try:
     ____functions
 except:
@@ -147,17 +166,32 @@ ____functions.append(({internal_function_name}, {proto}))
 
 
 def p_loop_stmt(t):
-    '''stmt : expression IDENTIFIER IDENTIFIER IDENTIFIER LOOP suite'''
-    if t[2] != '의' or t[4] != '마다':
-        print("구문 오류입니다: {} {} {} {}".format(t[2], t[3], t[4], t[5]))
-        print("\t'~ 의 ~ 마다 반복' 꼴이어야 합니다.")
+    #'''stmt : expression IDENTIFIER IDENTIFIER IDENTIFIER LOOP suite'''
+    #use_loop_before = False
+    '''stmt : LOOP expression IDENTIFIER IDENTIFIER IDENTIFIER suite'''
+    use_loop_before = True
+    if use_loop_before:
+        container, 의, variable, 마다, suite = t[2], t[3], t[4], t[5], t[6]
+        container_idx = 2
+        variable_idx = 4
+    else:
+        container, 의, variable, 마다, suite = t[1], t[2], t[3], t[4], t[6]
+        container_idx = 1
+        variable_idx = 3
+
+    if 의 != '의' or 마다 != '마다':
+        if use_loop_before:
+            report_error(t, "구문 오류입니다: 반복 {} {} {}".format(의, variable, 마다))
+        else:
+            report_error(t, "구문 오류입니다: {} {} {} 반복".format(의, variable, 마다))
+        report_error(t, "\t'~ 의 ~ 마다 반복' 꼴이어야 합니다.")
         raise SyntaxError
-    for_var = ast.Name(t[3], ast.Store())
-    for_var.lineno = t.lineno(3)
+    for_var = ast.Name(variable, ast.Store())
+    for_var.lineno = t.lineno(variable_idx)
     for_var.col_offset = -1 # XXX
 
-    t[0] = ast.For(for_var, t[1], t[6], [])
-    t[0].lineno = t.lineno(1)
+    t[0] = ast.For(for_var, container, suite, [])
+    t[0].lineno = t.lineno(container_idx)
     t[0].col_offset = -1  # XXX
 
 
@@ -169,7 +203,8 @@ def p_if_stmt(t):
 
 
 def p_assign_stmt(t):
-    '''stmt : target ASSIGN expression NEWLINE'''
+    '''stmt : target ASSIGN expression NEWLINE
+            | target ASSIGN call NEWLINE'''
     t[0] = ast.Assign(t[1], t[3])
     t[0].lineno = t.lineno(1)
     t[0].col_offset = -1  # XXX
@@ -194,27 +229,57 @@ def p_target_subscription(t):
     t[0] = [subscription]
 
 
-def p_expression_stmt(t):
-    '''stmt : expression NEWLINE'''
+def p_call_stmt(t):
+    '''stmt : call NEWLINE'''
     t[0] = ast.Expr(t[1])
     t[0].lineno = t.lineno(1)
     t[0].col_offset = -1  # XXX
 
 
 def p_expression(t):
-    '''expression : call
-                  | logic_expr'''
+    '''expression : logic_expr'''
     t[0] = t[1]
 
 
+def p_call_expression_list(t):
+    '''call_expression_list : call_expression_list expression
+                            | expression'''
+    # expression or IDENTIFIER or expression+IDENTIFIER(조사 붙여쓰기)
+    def unwrap_name(x):
+        if isinstance(x, ast.Name):
+            return ('NAME', x.id)
+        return ('EXPR', x)
+
+    if len(t) == 3:
+        t[0] = t[1] + [unwrap_name(t[2])]
+    else:
+        t[0] = [unwrap_name(t[1])]
+
+
 def p_call(t):
-    '''call : expression IDENTIFIER'''
-    func = ast.Name(t[2], ast.Load())
-    func.lineno = t.lineno(2)
-    func.col_offset = -1  # XXX
-    t[0] = ast.Call(func, [t[1]], [], None, None)
-    t[0].lineno = t.lineno(1)
-    t[0].col_offset = -1  # XXX
+    '''call : call_expression_list'''
+
+    call_expression_list = t[1]
+    call_matcher_appender = []
+    arg_s = {}
+    for idx, (ty, val) in enumerate(call_expression_list):
+        if isinstance(val, ast.AST):
+            arg_s['t{}'.format(idx)] = val
+            call_matcher_appender.append("(({!r}, <:t{}:>))\n".format(ty, idx))
+        else:
+            call_matcher_appender.append("(({!r}, {!r}))\n".format(ty, val))
+    call_matcher_appender = ','.join(call_matcher_appender)
+    arg_s['call_matcher_appender'] = call_matcher_appender
+
+    codes = '''____find_and_call_function([{call_matcher_appender}], ____locals(), ____globals())'''.format(**arg_s)
+    t[0] = transform(codes, arg_s, expose=True)[0].value
+
+    #func = ast.Name(t[2], ast.Load())
+    #func.lineno = t.lineno(2)
+    #func.col_offset = -1  # XXX
+    #t[0] = ast.Call(func, [t[1]], [], None, None)
+    #t[0].lineno = t.lineno(1)
+    #t[0].col_offset = -1  # XXX
 
 
 def p_logic_expr(t):
@@ -374,15 +439,13 @@ def p_list_items(t):
 
 
 def p_atom_paren(t):
-    '''atom : LPAR expression RPAR'''
+    '''atom : LPAR expression RPAR
+            | LPAR call RPAR'''
     t[0] = t[2]
 
 
 def p_error(t):
-    if t:
-        print("구문 오류입니다({}번째 줄): {}".format(t.lineno, repr(t.value)))
-    else:
-        print("구문 오류입니다.")
+    report_error(t, "구문 오류입니다.")
 
 
 class Parser:
@@ -392,10 +455,20 @@ class Parser:
             lexer = IndentLexer()
         self.lexer = lexer
         self.parser = ply.yacc.yacc(start="file_input_end", debug=False)
+        del errors[:]
 
-    def parse(self, code, interactive=False):
+
+    def parse(self, code, file_name, interactive=False):
         self.lexer.input(code)
-        tree = self.parser.parse(lexer = self.lexer)
+        tree = self.parser.parse(lexer = self.lexer, debug=False)
+        if errors:
+            first_error = None
+            for line, msg in errors:
+                if line == -1:
+                    print('{}\t{}'.format(file_name, msg))
+                else:
+                    print('{}:{}\t{}'.format(file_name, line, msg))
+            raise SyntaxError
         if interactive:
             return ast.Interactive(tree)
         else:
@@ -407,6 +480,6 @@ parser = Parser()
 
 def compile_code(code, file_name=None):
     interactive = file_name is None
-    tree = parser.parse(code, interactive=interactive)
-    logging.debug(ast.dump(tree))
+    tree = parser.parse(code, file_name or '<string>', interactive=interactive)
+    #logging.debug(ast.dump(tree))
     return compile(tree, file_name or '<string>', 'single' if interactive else 'exec')

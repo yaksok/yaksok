@@ -4,8 +4,10 @@ import ply.lex
 import logging
 
 TAB_SIZE = 8
-must_indent_group = set(["THEN", "LOOP"])
-must_indent_next_line_group = set(["DEFUN"])
+#must_indent_group = set(["THEN", "LOOP"])
+#must_indent_next_line_group = set(["DEFUN"])
+must_indent_group = set(["THEN"])
+must_indent_next_line_group = set(["DEFUN", "LOOP"])
 
 reserved = {
     '약속':'DEFUN',

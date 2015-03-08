@@ -1,3 +1,7 @@
+없음 = None
+____debug = False
+____locals = locals
+____globals = globals
 보여주기 = print
 ____range = range
 def ____subscript(l, x):
@@ -9,3 +13,96 @@ def ____subscript(l, x):
     else:
         return l[x-1]
 
+def ____print_one(x):
+    print(x)
+
+def ____find_and_call_function(matcher, lenv, genv):
+    def has_variable(x):
+        return x in genv or x in lenv
+
+    def get_variable_value(x):
+        if x in lenv:
+            return lenv[x]
+        return genv[x]
+        #if x in locals():
+            #return locals()[x]
+        #return globals()[x]
+
+    def try_match(matcher, proto):
+        if ____debug:
+            print('try_match', matcher, proto)
+        if not matcher and not proto:
+            yield []
+            return
+        if not matcher and proto:
+            return
+        if matcher and not proto:
+            return
+        if matcher[0][0] == 'EXPR':
+            if ____debug:
+                print('\t1')
+            if proto[0][0] == 'IDENTIFIER':
+                skip = 1
+                if len(proto) >= 2 and proto[1][0] == 'WS':
+                    skip = 2
+                for sub_candidate in try_match(matcher[1:], proto[skip:]):
+                    yield [matcher[0][1]] + sub_candidate
+        else: # matcher[0][0] == 'NAME'
+            if proto[0][0] == 'IDENTIFIER':
+                if ____debug:
+                    print('\t21')
+                sole_variable_exists = False
+                # 전체 이름에 해당하는 변수가 존재
+                if ____debug:
+                    print('\t',matcher[0][1],has_variable(matcher[0][1]))
+                if has_variable(matcher[0][1]):
+                    sole_variable_exists = True
+                    skip = 1
+                    if len(proto) >= 2 and proto[1][0] == 'WS':
+                        skip = 2
+                    for sub_candidate in try_match(matcher[1:], proto[skip:]):
+                        yield [get_variable_value(matcher[0][1])] + sub_candidate
+
+                # 정의에 빈칸 없는 경우, 잘라서 시도해본다
+                if len(proto) >= 2 and proto[1][0] != 'WS':
+                    if ____debug:
+                        print('\tsplit',matcher[0][1],proto[1][1])
+                    if proto[1][0] == 'STR' and matcher[0][1].endswith(proto[1][1]):
+                        variable_name = matcher[0][1][:-len(proto[1][1])];
+                        if has_variable(variable_name):
+                            skip = 2
+                            if len(proto) >= 3 and proto[2][0] == 'WS':
+                                skip = 3
+                            for sub_candidate in try_match(matcher[1:], proto[skip:]):
+                                if sole_variable_exists:
+                                    raise SyntaxError("헷갈릴 수 있는 변수명이 사용됨: " + matcher[0][1] + " / " + variable_name + "+" + proto[1][1])
+                                yield [get_variable_value(variable_name)] + sub_candidate
+            elif proto[0][0] == 'STR':
+                if ____debug:
+                    print('\t22')
+                if matcher[0][1] == proto[0][1]:
+                    skip = 1
+                    if len(proto) >= 2 and proto[1][0] == 'WS':
+                        skip = 2
+                    for sub_candidate in try_match(matcher[1:], proto[skip:]):
+                        yield sub_candidate
+
+            else:
+                pass
+
+
+    candidates = []
+    for func, proto in ____functions:
+        for args in try_match(matcher, proto):
+            candidates.append((func, args))
+
+    if len(candidates) == 0:
+        raise SyntaxError("해당하는 약속을 찾을 수 없습니다.")
+    if len(candidates) >= 2:
+        raise SyntaxError("적용할 수 있는 약속이 여러개입니다.")
+
+    func, args = candidates[0]
+    return func(*args)
+
+
+____functions = [[____print_one, [('IDENTIFIER', '값'), ('WS',' '), ('STR', '보여주기')]]]
