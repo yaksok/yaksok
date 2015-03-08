@@ -13,7 +13,7 @@ syn keyword ysBoolean 참 거짓
 syn keyword ysLoopMada contained 마다 의 반복
 syn match ysAssign "[:]"
 syn match ysOperator "[\+\-\*/\~]"
-syn region ysLoop start=+의+ end=+반복+ contains=ysLoopMada transparent
+syn region ysLoop start=+반복+ end=+마다+ contains=ysLoopMada transparent
 syn region ysString   start=+"+  skip=+\\\\\|\\"+  end=+"+
 syn region  ysComment	start="#" skip="\\$" end="$" keepend
   syn match   ysNumber	"\<\%([1-9]\d*\|0\)\>"
