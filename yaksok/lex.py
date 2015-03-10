@@ -66,7 +66,7 @@ def t_SPECIALBLOCK(t):
 
 
 def t_special_SPECIALBLOCK(t):
-    r"(.|[\n])*\*\*\*"
+    r"(.|[\n])*\n\*\*\*"
     t.value = t.value[:-3]
     t.lexer.begin('INITIAL')
     return t
@@ -152,6 +152,11 @@ def t_RPAR(t):
     r'\)'
     t.lexer.paren_count -= 1
     return t
+
+
+def t_special_error(t):
+    print("번역의 *** 쌍이 맞지 않습니다.")
+    t.lexer.skip(1)
 
 
 def t_error(t):
