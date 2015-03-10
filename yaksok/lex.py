@@ -9,6 +9,10 @@ TAB_SIZE = 8
 must_indent_group = set(["THEN"])
 must_indent_next_line_group = set(["DEFUN", "LOOP"])
 
+states = (
+    ('special', 'exclusive'),
+)
+
 reserved = {
     '약속':'DEFUN',
     '만약':'IF',
@@ -49,8 +53,31 @@ tokens = [
     'DEDENT',
     'WS',
 
+    'TRANSLATE',
+    'SPECIALBLOCK',
+
     'ENDMARKER',
 ] + list(set(reserved.values()))
+
+def t_SPECIALBLOCK(t):
+    r"\*\*\*"
+    t.lexer.begin('special')
+    return t
+
+
+def t_special_SPECIALBLOCK(t):
+    r"(.|[\n])*\*\*\*"
+    t.value = t.value[:-3]
+    t.lexer.begin('INITIAL')
+    return t
+
+
+def t_TRANSLATE(t):
+    r"번역\([^)]*\)"
+    t.value = t.value[3:-1] # 언어 부분만 자른다
+    t.type = 'TRANSLATE'
+    t.lexer.inside_defun = True
+    return t
 
 
 def t_comment(t):

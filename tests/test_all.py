@@ -45,6 +45,15 @@ def test_add_function():
     assert env['뭔가'] == 12+27+11
     assert env['그것'] == 12+27+11+77
 
-#약속 무언가 "두번 보여주기"
-    #무언가 보여주기
-    #무언가 보여주기
+
+def test_translate():
+    env = run_code('''
+번역(python) x "뒤에" y "추가" 
+***
+    x.append(y)
+***
+
+리스트: []
+리스트 뒤에 5 추가
+''')
+    assert env['리스트'] == [5]

@@ -139,6 +139,32 @@ def validate_function_description(fd_list):
                 #report_error(t, '\t문자열 양 옆으로 빈 칸 없이 붙여쓸 수 없습니다.')
                 #raise SyntaxError
 
+def p_translate_stmt(t):
+    '''stmt : TRANSLATE WS function_description NEWLINE SPECIALBLOCK SPECIALBLOCK NEWLINE'''
+    if t[1] == 'python':
+        proto = t[3]
+        body = t[6]
+        while proto[-1][0] == 'WS':
+            proto.pop()
+        validate_function_description(proto)
+        arg_list = ','.join(item[1] for item in proto if item[0] == 'IDENTIFIER')
+        internal_function_name = gen_sym()
+
+        codes = '''
+def {internal_function_name}({arg_list}):
+    {body}
+try:
+    ____functions
+except:
+    ____functions = []
+
+____functions.append(({internal_function_name}, {proto}))
+'''.format(**locals())
+
+        t[0] = transform(codes, {}, expose=True)
+    else:
+        t[0] = []
+
 
 def p_function_return_stmt(t):
     '''stmt : END_BLOCK NEWLINE'''
@@ -453,7 +479,7 @@ def p_atom_paren(t):
 
 
 def p_error(t):
-    report_error(t, "구문 오류입니다.")
+    report_error(t, "구문 오류입니다. (원인불명)")
 
 
 class Parser:
