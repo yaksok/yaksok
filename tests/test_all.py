@@ -23,6 +23,13 @@ def test_assign():
     env = run_code("a:3")
     assert env['a'] == 3
 
+def test_pass():
+    run_code('''
+패스
+만약 1 이면
+    패스
+''')
+
 def test_define_function():
     run_code('''
 약속 "안녕세계"

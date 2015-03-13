@@ -170,7 +170,14 @@ def p_function_return_stmt(t):
     '''stmt : END_BLOCK NEWLINE'''
     t[0] = transform('return 결과', {}, expose=True)[0]
     t[0].lineno = t.lineno(1)
+    t[0].col_offset = -1 # XXX
 
+
+def p_pass_stmt(t):
+    '''stmt : PASS NEWLINE'''
+    t[0] = ast.Pass()
+    t[0].lineno = t.lineno(1)
+    t[0].col_offset = -1 # XXX
 
 def p_function_def_stmt(t):
     '''stmt : DEFUN WS function_description suite'''

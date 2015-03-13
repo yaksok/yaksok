@@ -22,6 +22,7 @@ reserved = {
     '거짓':'FALSE',
     '반복':'LOOP',
     '끝':'END_BLOCK',
+    '패스':'PASS',
 }
 
 tokens = [
