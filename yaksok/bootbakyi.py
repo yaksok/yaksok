@@ -1,9 +1,19 @@
 없음 = None
+____id = id
 ____debug = False
 ____locals = locals
 ____globals = globals
-보여주기 = print
 ____range = range
+____eval = eval
+____modules = {}
+
+def ____getmodule(name):
+    # TODO sys.modules 같은 import된 모듈 저장소가 필요
+    if name not in ____modules:
+        ____modules[name] = ____run_code(open(name + '.yak').read())
+    return ____modules[name]
+
+
 def ____subscript(l, x):
     if isinstance(x, (list, range)):
         if isinstance(l, str):
@@ -16,7 +26,7 @@ def ____subscript(l, x):
 def ____print_one(x):
     print(x)
 
-def ____find_and_call_function(matcher, lenv, genv):
+def ____find_and_call_function(matcher, lenv, genv, functions):
     def has_variable(x):
         return x in genv or x in lenv
 
@@ -92,7 +102,7 @@ def ____find_and_call_function(matcher, lenv, genv):
 
 
     candidates = []
-    for func, proto in ____functions:
+    for func, proto in functions:
         for args in try_match(matcher, proto):
             candidates.append((func, args))
 
@@ -105,4 +115,4 @@ def ____find_and_call_function(matcher, lenv, genv):
     return func(*args)
 
 
-____functions = [[____print_one, [('IDENTIFIER', '값'), ('WS',' '), ('STR', '보여주기')]]]
+____functions = [(____print_one, [('IDENTIFIER', '값'), ('WS',' '), ('STR', '보여주기')])]

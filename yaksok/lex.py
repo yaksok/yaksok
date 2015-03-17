@@ -57,6 +57,8 @@ tokens = [
     'TRANSLATE',
     'SPECIALBLOCK',
 
+    'ATMARK',
+
     'ENDMARKER',
 ] + list(set(reserved.values()))
 
@@ -107,6 +109,7 @@ def t_IDENTIFIER(t):
 t_ASSIGN = r':'
 t_COMMA = r','
 t_TILDE = r'~'
+t_ATMARK = r'@'
 
 t_PLUS = r'\+'
 t_MINUS = r'\-'

@@ -244,7 +244,8 @@ def p_if_stmt(t):
 
 def p_assign_stmt(t):
     '''stmt : target ASSIGN expression NEWLINE
-            | target ASSIGN call NEWLINE'''
+            | target ASSIGN call NEWLINE
+            | target ASSIGN import_call NEWLINE'''
     t[0] = ast.Assign(t[1], t[3])
     t[0].lineno = t.lineno(1)
     t[0].col_offset = -1  # XXX
@@ -267,6 +268,23 @@ def p_target_subscription(t):
     subscription.lineno = t.lineno(1)
     subscription.col_offset = -1  # XXX
     t[0] = [subscription]
+
+
+def p_imported_call_stmt(t):
+    '''stmt : import_call NEWLINE'''
+    t[0] = t[1]
+
+
+def p_imported_call(t):
+    '''import_call : ATMARK IDENTIFIER call'''
+    # call is ast.Call()
+
+    codes = '''____getmodule("{}")['____functions']'''.format(t[2])
+    last_arg = transform(codes, {}, expose=True)[0].value
+
+    call_ast = t[3]
+    call_ast.args[-1] = last_arg
+    t[0] = call_ast
 
 
 def p_call_stmt(t):
@@ -311,7 +329,7 @@ def p_call(t):
     call_matcher_appender = ','.join(call_matcher_appender)
     arg_s['call_matcher_appender'] = call_matcher_appender
 
-    codes = '''____find_and_call_function([{call_matcher_appender}], ____locals(), ____globals())'''.format(**arg_s)
+    codes = '''____find_and_call_function([{call_matcher_appender}], ____locals(), ____globals(), ____functions)'''.format(**arg_s)
     t[0] = transform(codes, arg_s, expose=True)[0].value
 
     #func = ast.Name(t[2], ast.Load())
@@ -481,7 +499,8 @@ def p_list_items(t):
 
 def p_atom_paren(t):
     '''atom : LPAR expression RPAR
-            | LPAR call RPAR'''
+            | LPAR call RPAR
+            | LPAR import_call RPAR'''
     t[0] = t[2]
 
 
@@ -522,5 +541,5 @@ parser = Parser()
 def compile_code(code, file_name=None):
     interactive = file_name is None
     tree = parser.parse(code, file_name or '<string>', interactive=interactive)
-    #logging.debug(ast.dump(tree))
+    logging.debug(ast.dump(tree))
     return compile(tree, file_name or '<string>', 'single' if interactive else 'exec')

@@ -3,6 +3,7 @@
 from yaksok.yaksok import run_code
 from yaksok.ast_tool import transform
 import ast
+import os
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
@@ -64,3 +65,20 @@ def test_translate():
 리스트 뒤에 5 추가
 ''')
     assert env['리스트'] == [5]
+
+def test_import():
+    print('''
+약속 가 나 "더하기"
+    결과: 가+나
+''', file=open('더함.yak','w'))
+    env = run_code('''
+약속 나 가 "더하기"
+    결과: (@더함 가 나 더하기)+4
+삼: @더함 1 2 더하기
+팔: 2 2 더하기
+사: @더함 2 2 더하기
+''')
+    assert env['삼'] == 3
+    assert env['사'] == 4
+    assert env['팔'] == 8
+    os.remove('더함.yak')
