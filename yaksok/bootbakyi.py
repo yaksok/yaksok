@@ -10,7 +10,7 @@ ____modules = {}
 def ____getmodule(name):
     # TODO sys.modules 같은 import된 모듈 저장소가 필요
     if name not in ____modules:
-        ____modules[name] = ____run_code(open(name + '.yak').read())
+        ____modules[name] = ____run_code(open(name + '.yak').read(), name+'.yak')
     return ____modules[name]
 
 

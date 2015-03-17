@@ -332,13 +332,6 @@ def p_call(t):
     codes = '''____find_and_call_function([{call_matcher_appender}], ____locals(), ____globals(), ____functions)'''.format(**arg_s)
     t[0] = transform(codes, arg_s, expose=True)[0].value
 
-    #func = ast.Name(t[2], ast.Load())
-    #func.lineno = t.lineno(2)
-    #func.col_offset = -1  # XXX
-    #t[0] = ast.Call(func, [t[1]], [], None, None)
-    #t[0].lineno = t.lineno(1)
-    #t[0].col_offset = -1  # XXX
-
 
 def p_logic_expr(t):
     '''logic_expr : arith_expr EQ arith_expr
@@ -541,5 +534,5 @@ parser = Parser()
 def compile_code(code, file_name=None):
     interactive = file_name is None
     tree = parser.parse(code, file_name or '<string>', interactive=interactive)
-    logging.debug(ast.dump(tree))
+    #logging.debug(ast.dump(tree))
     return compile(tree, file_name or '<string>', 'single' if interactive else 'exec')

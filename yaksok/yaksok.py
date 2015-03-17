@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 import copy
 
@@ -26,7 +27,10 @@ def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('file_name', nargs='?')
     argparser.add_argument('-d', '--debug', action='store_true')
+    argparser.add_argument('-p', '--path', action='store', default='')
     args = argparser.parse_args()
+    if args.path:
+        os.chdir(args.path)
     if args.debug:
         import logging
         logging.basicConfig(level=logging.DEBUG)

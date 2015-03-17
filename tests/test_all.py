@@ -70,6 +70,9 @@ def test_import():
     print('''
 약속 가 나 "더하기"
     결과: 가+나
+약속 가 나 "빼기"
+    가-나 보여주기
+    결과: 가-나
 ''', file=open('더함.yak','w'))
     env = run_code('''
 약속 나 가 "더하기"
@@ -77,8 +80,10 @@ def test_import():
 삼: @더함 1 2 더하기
 팔: 2 2 더하기
 사: @더함 2 2 더하기
+이: @더함 6 4 빼기
 ''')
     assert env['삼'] == 3
     assert env['사'] == 4
     assert env['팔'] == 8
+    assert env['이'] == 2
     os.remove('더함.yak')
