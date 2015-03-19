@@ -498,7 +498,7 @@ def p_atom_paren(t):
 
 
 def p_error(t):
-    report_error(t, "구문 오류입니다. (원인불명)")
+    report_error(t, "구문 오류입니다. (원인불명) {}".format(t))
 
 
 class Parser:
