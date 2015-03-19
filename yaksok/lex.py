@@ -69,7 +69,7 @@ def t_SPECIALBLOCK(t):
 
 
 def t_special_SPECIALBLOCK(t):
-    r"(.|[\n])*\n\*\*\*"
+    r"(.|[\n])*?\n\*\*\*"
     t.value = t.value[:-3]
     t.lexer.begin('INITIAL')
     return t
