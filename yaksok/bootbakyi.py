@@ -21,7 +21,9 @@ def ____subscript(l, x):
         else:
             return [l[y-1] for y in x]
     else:
-        return l[x-1]
+        if x > 0:
+            x -= 1
+        return l[x]
 
 def ____print_one(x):
     print(x)
