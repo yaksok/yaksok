@@ -111,7 +111,14 @@ def p_function_description_item_identifier(t):
 
 def p_function_description_item_str(t):
     '''function_description_item : defun_str'''
-    t[0] = ('STR', t[1][1:-1])
+
+    body = eval(t[1])
+    # 을/를 이/가 등의 조사 지원
+    if '/' in body:
+        body = body.split('/')
+        t[0] = ('STRS', body)
+    else:
+        t[0] = ('STR', body)
 
 
 def p_function_description(t):

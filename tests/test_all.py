@@ -66,6 +66,7 @@ def test_translate():
 ''')
     assert env['리스트'] == [5]
 
+
 def test_import():
     print('''
 약속 가 나 "더하기"
@@ -87,3 +88,17 @@ def test_import():
     assert env['팔'] == 8
     assert env['이'] == 2
     os.remove('더함.yak')
+
+
+def test_postposition():
+    env = run_code('''
+약속 과일"을/를" "먹자"
+    결과:과일 + " 씨앗"
+사과:"사과"
+감:"감"
+먹은_사과:사과를 먹자
+먹은_감:감을 먹자
+''')
+    assert env['먹은_사과'] == '사과 씨앗'
+    assert env['먹은_감'] == '감 씨앗'
+

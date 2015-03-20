@@ -77,18 +77,24 @@ def ____find_and_call_function(matcher, lenv, genv, functions):
 
                 # 정의에 빈칸 없는 경우, 잘라서 시도해본다
                 if len(proto) >= 2 and proto[1][0] != 'WS':
-                    if ____debug:
-                        print('\tsplit',matcher[0][1],proto[1][1])
-                    if proto[1][0] == 'STR' and matcher[0][1].endswith(proto[1][1]):
-                        variable_name = matcher[0][1][:-len(proto[1][1])];
-                        if has_variable(variable_name):
-                            skip = 2
-                            if len(proto) >= 3 and proto[2][0] == 'WS':
-                                skip = 3
-                            for sub_candidate in try_match(matcher[1:], proto[skip:]):
-                                if sole_variable_exists:
-                                    raise SyntaxError("헷갈릴 수 있는 변수명이 사용됨: " + matcher[0][1] + " / " + variable_name + "+" + proto[1][1])
-                                yield [get_variable_value(variable_name)] + sub_candidate
+                    def try_sliced_str_match(each_str):
+                        if ____debug:
+                            print('\tsplit',matcher[0][1],each_str)
+                        if matcher[0][1].endswith(each_str):
+                            variable_name = matcher[0][1][:-len(each_str)];
+                            if has_variable(variable_name):
+                                skip = 2
+                                if len(proto) >= 3 and proto[2][0] == 'WS':
+                                    skip = 3
+                                for sub_candidate in try_match(matcher[1:], proto[skip:]):
+                                    if sole_variable_exists:
+                                        raise SyntaxError("헷갈릴 수 있는 변수명이 사용됨: " + matcher[0][1] + " / " + variable_name + "+" + each_str)
+                                    yield [get_variable_value(variable_name)] + sub_candidate
+                    if proto[1][0] == 'STRS':
+                        for each_str in proto[1][1]:
+                            yield from try_sliced_str_match(each_str)
+                    elif proto[1][0] == 'STR':
+                        yield from try_sliced_str_match(proto[1][1])
             elif proto[0][0] == 'STR':
                 if ____debug:
                     print('\t22')
@@ -98,7 +104,16 @@ def ____find_and_call_function(matcher, lenv, genv, functions):
                         skip = 2
                     for sub_candidate in try_match(matcher[1:], proto[skip:]):
                         yield sub_candidate
-
+            elif proto[0][0] == 'STRS':
+                if ____debug:
+                    print('\t23')
+                for each_str in proto[0][1]:
+                    if matcher[0][1] == each_str:
+                        skip = 1
+                        if len(proto) >= 2 and proto[1][0] == 'WS':
+                            skip = 2
+                        for sub_candidate in try_match(matcher[1:], proto[skip:]):
+                            yield sub_candidate
             else:
                 pass
 
