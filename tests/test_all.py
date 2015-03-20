@@ -36,6 +36,9 @@ def test_define_function():
 약속 "안녕세계"
     "안녕세계" 보여주기
 안녕세계
+약속 "안녕 세계"
+    "안녕 세계" 보여주기
+안녕 세계
 ''')
 
 def test_add_function():
@@ -102,3 +105,15 @@ def test_postposition():
     assert env['먹은_사과'] == '사과 씨앗'
     assert env['먹은_감'] == '감 씨앗'
 
+
+def test_space_in_promise_definition_with_postposition():
+    env = run_code('''
+약속 과일"을/를 먹자"
+    결과:과일 + " 씨앗"
+사과:"사과"
+감:"감"
+먹은_사과:사과를 먹자
+먹은_감:감을 먹자
+''')
+    assert env['먹은_사과'] == '사과 씨앗'
+    assert env['먹은_감'] == '감 씨앗'

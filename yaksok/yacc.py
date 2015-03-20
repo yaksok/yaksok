@@ -101,33 +101,48 @@ def p_defun_str(t):
 
 def p_function_description_item_ws(t):
     '''function_description_item : WS'''
-    t[0] = ('WS', t[1])
+    t[0] = [('WS', t[1])]
 
 
 def p_function_description_item_identifier(t):
     '''function_description_item : IDENTIFIER'''
-    t[0] = ('IDENTIFIER', t[1])
+    t[0] = [('IDENTIFIER', t[1])]
 
 
 def p_function_description_item_str(t):
     '''function_description_item : defun_str'''
 
     body = eval(t[1])
-    # 을/를 이/가 등의 조사 지원
-    if '/' in body:
-        body = body.split('/')
-        t[0] = ('STRS', body)
+
+    # whitespace가 포함된 경우 여러 STR을 지정한 것과 마찬가지로 만들어준다
+    # "안녕 세계" === "안녕" "세계"
+    if ' ' in body:
+        body = body.split(' ')
+        new_body = [('WS', ' ')] * (len(body)*2-1)
+        new_body[::2] = body
+        body = new_body
     else:
-        t[0] = ('STR', body)
+        body = [body]
+
+    for idx, element in enumerate(body):
+        if idx%2 == 1: 
+            continue
+        # 을/를 이/가 등의 조사 지원
+        if '/' in element:
+            element = element.split('/')
+            body[idx] = ('STRS', element)
+        else:
+            body[idx] = ('STR', element)
+    t[0] = body
 
 
 def p_function_description(t):
     '''function_description : function_description function_description_item
                             | function_description_item'''
     if len(t) == 3:
-        t[0] = t[1] + [t[2]]
+        t[0] = t[1] + t[2]
     else:
-        t[0] = [t[1]]
+        t[0] = t[1]
 
 
 def validate_function_description(fd_list):
