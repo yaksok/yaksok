@@ -272,7 +272,9 @@ def p_target_subscription(t):
 
 def p_imported_call_stmt(t):
     '''stmt : import_call NEWLINE'''
-    t[0] = t[1]
+    t[0] = ast.Expr(t[1])
+    t[0].lineno = t.lineno(1)
+    t[0].col_offset = -1 # XXX
 
 
 def p_imported_call(t):
