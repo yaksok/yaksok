@@ -23,6 +23,10 @@ reserved = {
     '반복':'LOOP',
     '끝':'END_BLOCK',
     '패스':'PASS',
+    '이고':'AND',
+    '그리고':'AND',
+    '또는':'OR',
+    '이거나':'OR',
 }
 
 tokens = [
@@ -43,6 +47,8 @@ tokens = [
     'GT',
     'LT',
     'NE',
+    'GTEQ',
+    'LTEQ',
 
     'LPAR',
     'RPAR',
@@ -120,6 +126,8 @@ t_EQ = '='
 t_GT = '>'
 t_LT = '<'
 t_NE = '!='
+t_GTEQ = '>='
+t_LTEQ = '<='
 
 #t_ignore = ' \t'
 

@@ -7,10 +7,13 @@ from .ast_tool import transform
 
 
 precedence = (
-    ("nonassoc", "EQ", "GT", "LT", "NE"),
-    ("left", "TILDE"),
-    ("left", "PLUS", "MINUS"),
-    ("left", "MULT", "DIV"),
+    #("left", "OR"),
+    #("left", "AND"),
+    ("nonassoc", "EQ", "GT", "LT", "NE", "GTEQ", "LTEQ"),
+    #("left", "TILDE"),
+    #("left", "PLUS", "MINUS"),
+    #("left", "MULT", "DIV"),
+    #("right", "UMINUS"),
 )
 
 binop_cls = {
@@ -20,6 +23,8 @@ binop_cls = {
     '/': ast.Div,
     '>': ast.Gt,
     '<': ast.Lt,
+    '>=': ast.GtE,
+    '<=': ast.LtE,
     '=': ast.Eq,
     '!=': ast.NotEq,
 }
@@ -319,8 +324,44 @@ def p_call_stmt(t):
 
 
 def p_expression(t):
-    '''expression : logic_expr'''
+    '''expression : logic_or_expr'''
     t[0] = t[1]
+
+
+def p_logic_or_expr(t):
+    '''logic_or_expr : logic_or_expr OR logic_and_expr
+                     | logic_and_expr'''
+    if len(t) == 4:
+        if isinstance(t[1], ast.BoolOp) and isinstance(t[1].op, ast.Or):
+            t[0] = t[1]
+            t[0].values.append(t[3])
+        else:
+            or_ast = ast.Or()
+            or_ast.lineno = t.lineno(2)
+            or_ast.col_offset = -1 # XXX
+            t[0] = ast.BoolOp(or_ast, [t[1], t[3]])
+            t[0].lineno = t.lineno(2)
+            t[0].col_offset = -1 # XXX
+    else:
+        t[0] = t[1]
+
+
+def p_logic_and_expr(t):
+    '''logic_and_expr : logic_and_expr AND logic_expr
+                      | logic_expr'''
+    if len(t) == 4:
+        if isinstance(t[1], ast.BoolOp) and isinstance(t[1].op, ast.And):
+            t[0] = t[1]
+            t[0].values.append(t[3])
+        else:
+            and_ast = ast.And()
+            and_ast.lineno = t.lineno(2)
+            and_ast.col_offset = -1 # XXX
+            t[0] = ast.BoolOp(and_ast, [t[1], t[3]])
+            t[0].lineno = t.lineno(2)
+            t[0].col_offset = -1 # XXX
+    else:
+        t[0] = t[1]
 
 
 def p_call_expression_list(t):
@@ -361,7 +402,9 @@ def p_logic_expr(t):
     '''logic_expr : arith_expr EQ arith_expr
                   | arith_expr NE arith_expr
                   | arith_expr GT arith_expr
-                  | arith_expr LT arith_expr'''
+                  | arith_expr LT arith_expr
+                  | arith_expr GTEQ arith_expr
+                  | arith_expr LTEQ arith_expr'''
     t[0] = ast.Compare(t[1], [binop_cls[t[2]]()], [t[3]])
     t[0].lineno = t.lineno(1)
     t[0].col_offset = -1  # XXX
@@ -372,15 +415,29 @@ def p_logic_expr_arith_expr(t):
     t[0] = t[1]
 
 
-# precedence 주면 PLY가 알아서 해줌
 def p_arith_expr(t):
-    '''arith_expr : arith_expr PLUS arith_expr
-                  | arith_expr MINUS arith_expr
-                  | arith_expr MULT arith_expr
-                  | arith_expr DIV arith_expr'''
+    '''arith_expr : arith_expr PLUS term
+                  | arith_expr MINUS term'''
     t[0] = ast.BinOp(t[1], binop_cls[t[2]](), t[3])
     t[0].lineno = t.lineno(1)
     t[0].col_offset = -1  # XXX
+
+def p_arith_expr_term(t):
+    '''arith_expr : term'''
+    t[0] = t[1]
+
+
+def p_term(t):
+    '''term : term MULT factor
+            | term DIV factor'''
+    t[0] = ast.BinOp(t[1], binop_cls[t[2]](), t[3])
+    t[0].lineno = t.lineno(1)
+    t[0].col_offset = -1  # XXX
+
+
+def p_term_factor(t):
+    '''term : factor'''
+    t[0] = t[1]
 
 
 def make_add_one(t, idx):
@@ -407,23 +464,25 @@ def make_sub_one(t, idx):
     return add_one
 
 
-def p_arith_expr_unary_expr(t):
-    '''arith_expr : unary_expr'''
+def p_factor_unary_expr(t):
+    '''factor : unary_expr'''
     t[0] = t[1]
 
 
-def p_unary_expr(t):
-	'''unary_expr : primary
-				  | MINUS primary'''
-	if len(t) == 2:
-		t[0] = t[1]
-	else:
-		usub = ast.USub()
-		usub.lineno = t.lineno(1)
-		usub.col_offset = -1 # XXX
-		t[0] = ast.UnaryOp(usub, t[2])
-		t[0].lineno = t.lineno(2)
-		t[0].col_offset = -1 # XXX
+def p_unary_expr_primary(t):
+    '''unary_expr : primary'''
+    t[0] = t[1]
+
+
+def p_unary_expr_minus_primary(t):
+    #'''unary_expr : MINUS primary %prec UMINUS'''
+    '''unary_expr : MINUS primary'''
+    usub = ast.USub()
+    usub.lineno = t.lineno(1)
+    usub.col_offset = -1 # XXX
+    t[0] = ast.UnaryOp(usub, t[2])
+    t[0].lineno = t.lineno(2)
+    t[0].col_offset = -1 # XXX
 
 
 def p_primary(t):

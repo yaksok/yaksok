@@ -119,3 +119,24 @@ def test_space_in_promise_definition_with_postposition():
 ''')
     assert env['먹은_사과'] == '사과 씨앗'
     assert env['먹은_감'] == '감 씨앗'
+
+
+def test_logic_op():
+    env = run_code('''
+a11:참 그리고 참
+a10:참 그리고 거짓
+a01:거짓 이고 참
+a00:거짓 이고 거짓
+o00:거짓 또는 거짓
+o01:거짓 또는 참
+o10:참 이거나 거짓
+o11:참 이거나 참
+''')
+    assert env['a11'] == True
+    assert env['a10'] == False
+    assert env['a01'] == False
+    assert env['a00'] == False
+    assert env['o11'] == True
+    assert env['o10'] == True
+    assert env['o01'] == True
+    assert env['o00'] == False
