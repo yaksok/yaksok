@@ -19,6 +19,7 @@ precedence = (
 binop_cls = {
     '+': ast.Add,
     '-': ast.Sub,
+    '%': ast.Mod,
     '*': ast.Mult,
     '/': ast.Div,
     '>': ast.Gt,
@@ -194,8 +195,22 @@ ____functions.append(({internal_function_name}, {proto}))
 
 
 def p_function_return_stmt(t):
-    '''stmt : END_BLOCK NEWLINE'''
+    '''stmt : DEFUN WS END_BLOCK NEWLINE'''
     t[0] = transform('return 결과', {}, expose=True)[0]
+    t[0].lineno = t.lineno(1)
+    t[0].col_offset = -1 # XXX
+
+
+def p_break_stmt(t):
+    '''stmt : LOOP END_BLOCK NEWLINE'''
+    t[0] = transform('break', {}, expose=True)[0]
+    t[0].lineno = t.lineno(1)
+    t[0].col_offset = -1 # XXX
+
+
+def p_continue_stmt(t):
+    '''stmt : LOOP CONTINUE NEWLINE'''
+    t[0] = transform('continue', {}, expose=True)[0]
     t[0].lineno = t.lineno(1)
     t[0].col_offset = -1 # XXX
 
@@ -230,6 +245,18 @@ ____functions.append(({internal_function_name}, {proto}))
 '''.format(**locals())
 
     t[0] = transform(codes, dict(suite=t[4]), expose=True)
+
+def p_infinite_loop_stmt(t):
+    '''stmt : LOOP suite'''
+    one = ast.Num(1)
+    one.lineno = t.lineno(1)
+    one.col_offset = -1  # XXX
+
+    suite = t[2]
+
+    t[0] = ast.While(one, suite, [])
+    t[0].lineno = t.lineno(1)
+    t[0].col_offset = -1  # XXX
 
 
 def p_loop_stmt(t):
@@ -429,7 +456,8 @@ def p_arith_expr_term(t):
 
 def p_term(t):
     '''term : term MULT factor
-            | term DIV factor'''
+            | term DIV factor
+            | term MOD factor'''
     t[0] = ast.BinOp(t[1], binop_cls[t[2]](), t[3])
     t[0].lineno = t.lineno(1)
     t[0].col_offset = -1  # XXX

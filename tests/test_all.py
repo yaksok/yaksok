@@ -140,3 +140,17 @@ o11:참 이거나 참
     assert env['o10'] == True
     assert env['o01'] == True
     assert env['o00'] == False
+
+def test_inf_loop_continue_break():
+    env = run_code('''
+합:0
+위치:0
+반복
+    위치:위치+1
+    만약 위치 > 10 이면
+        반복 그만
+    만약 위치 % 2 = 1 이면
+        반복 다시
+    합:합+위치
+''')
+    assert env['합'] == 2+4+6+8+10

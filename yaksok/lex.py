@@ -21,7 +21,8 @@ reserved = {
     '참':'TRUE',
     '거짓':'FALSE',
     '반복':'LOOP',
-    '끝':'END_BLOCK',
+    '그만':'END_BLOCK',
+    '다시':'CONTINUE',
     '패스':'PASS',
     '이고':'AND',
     '그리고':'AND',
@@ -42,6 +43,7 @@ tokens = [
     'MINUS',
     'MULT',
     'DIV',
+    'MOD',
 
     'EQ',
     'GT',
@@ -110,6 +112,8 @@ def t_IDENTIFIER(t):
     t.type = reserved.get(t.value, 'IDENTIFIER')
     if t.type == 'DEFUN':
         t.lexer.inside_defun = True
+    if t.type == 'END_BLOCK':
+        t.lexer.inside_defun = False
     return t
 
 t_ASSIGN = r':'
@@ -121,6 +125,7 @@ t_PLUS = r'\+'
 t_MINUS = r'\-'
 t_MULT = r'\*'
 t_DIV = r'/'
+t_MOD = r'\%'
 
 t_EQ = '='
 t_GT = '>'
@@ -233,6 +238,10 @@ def track_tokens_filter(lexer, tokens):
             indent = NO_INDENT
             if token.type in must_indent_next_line_group:
                 must_indent_next_line = True
+            # 반복 다시, 반복 그만, 약속 그만 의 경우 다음 줄에 인덴트가 필요없다
+            if token.type == 'END_BLOCK' or token.type == 'CONTINUE':
+                must_indent_next_line = False
+
 
         yield token
         lexer.at_line_start = at_line_start
