@@ -6,7 +6,7 @@ import logging
 TAB_SIZE = 8
 #must_indent_group = set(["THEN", "LOOP"])
 #must_indent_next_line_group = set(["DEFUN"])
-must_indent_group = set(["THEN"])
+must_indent_group = set(["THEN", "ELSE"])
 must_indent_next_line_group = set(["DEFUN", "LOOP"])
 
 states = (
@@ -18,6 +18,9 @@ reserved = {
     '만약':'IF',
     '이면':'THEN',
     '이라면':'THEN',
+    '아니면':'ELSE',
+    '아니라면':'ELSE',
+    '아니면서':'ELSEAND',
     '참':'TRUE',
     '거짓':'FALSE',
     '반복':'LOOP',

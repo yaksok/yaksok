@@ -246,6 +246,7 @@ ____functions.append(({internal_function_name}, {proto}))
 
     t[0] = transform(codes, dict(suite=t[4]), expose=True)
 
+
 def p_infinite_loop_stmt(t):
     '''stmt : LOOP suite'''
     one = ast.Num(1)
@@ -289,9 +290,78 @@ def p_loop_stmt(t):
     t[0].col_offset = -1  # XXX
 
 
+def p_empty(t):
+    '''empty : '''
+
+
+def p_if_else_or_empty(t):
+    '''else_or_empty : ELSE suite
+                     | empty'''
+    if len(t) == 2:
+        t[0] = []
+    else:
+        t[0] = t[2]
+
+
+def p_if_elif(t):
+    '''elif : ELSE IF expression THEN suite
+            | ELSEAND IF expression THEN suite'''
+    # NOTE
+    # 아니면 만약, 아니라면 만약 / 아니면서 만약
+    # ELSE랑 충분히 헷갈릴 수 있으므로 일단 모두 처리가능하게
+    elif_block = ast.If(t[3], t[5], [])
+    elif_block.lineno = t.lineno(4)
+    elif_block.col_offset = -1  # XXX
+    t[0] = elif_block
+
+
+# 부정 조건문의 elif 버전
+def p_if_elif_else(t):
+    '''elif : ELSE IF expression ELSE suite
+            | ELSEAND IF expression ELSE suite'''
+    # NOTE
+    # 아니면 만약, 아니라면 만약 / 아니면서 만약
+    # ELSE랑 충분히 헷갈릴 수 있으므로 일단 모두 처리가능하게
+    not_ast = ast.Not()
+    not_ast.lineno = t.lineno(2)
+    nonassoc.col_offset = -1 # XXX
+
+    cond = ast.UnaryOp(not_ast, t[3])
+    cond.lineno = t.lineno(2)
+    cond.col_offset = -1 # XXX
+
+    elif_block = ast.If(cond, t[5], [])
+    elif_block.lineno = t.lineno(4)
+    elif_block.col_offset = -1  # XXX
+    t[0] = elif_block
+
+
+def p_if_elifs(t):
+    '''elifs : elifs elif
+             | empty'''
+    if len(t) == 3:
+        t[0] = t[1] + [t[2]]
+    else:
+        t[0] = []
+
 def p_if_stmt(t):
-    '''stmt : IF expression THEN suite'''
-    t[0] = ast.If(t[2], t[4], [])
+    '''stmt : IF expression THEN suite elifs else_or_empty'''
+    last = t[6]
+    elifs = t[5]
+    for elif_block in elifs:
+        elif_block.orelse = last
+        last = [elif_block]
+    t[0] = ast.If(t[2], t[4], last)
+    t[0].lineno = t.lineno(3)
+    t[0].col_offset = -1  # XXX
+
+
+def p_if_else_stmt(t):
+    '''stmt : IF expression ELSE suite'''
+    pass_ast = ast.Pass()
+    pass_ast.lineno = t.lineno(1)
+    pass_ast.col_offset = -1 # XXX
+    t[0] = ast.If(t[2], [pass_ast], t[4])
     t[0].lineno = t.lineno(4)
     t[0].col_offset = -1  # XXX
 

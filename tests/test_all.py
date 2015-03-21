@@ -154,3 +154,26 @@ def test_inf_loop_continue_break():
     합:합+위치
 ''')
     assert env['합'] == 2+4+6+8+10
+
+def test_complex_if():
+    env = run_code('''
+키:175
+몸무게:100
+이름:"개똥"
+루저:거짓
+천재:거짓
+비만:거짓
+나도몰라:거짓
+만약 키 > 180 아니면
+    루저:참
+만약 이름="천재" 이면
+    천재:참
+아니면서 만약 몸무게>80 이면
+    비만:참
+아니면
+    나도몰라:참
+''')
+    assert env['루저'] == True
+    assert env['천재'] == False
+    assert env['비만'] == True
+    assert env['나도몰라'] == False
