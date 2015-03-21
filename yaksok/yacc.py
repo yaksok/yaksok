@@ -407,9 +407,23 @@ def make_sub_one(t, idx):
     return add_one
 
 
-def p_arith_expr_primary(t):
-    '''arith_expr : primary'''
+def p_arith_expr_unary_expr(t):
+    '''arith_expr : unary_expr'''
     t[0] = t[1]
+
+
+def p_unary_expr(t):
+	'''unary_expr : primary
+				  | MINUS primary'''
+	if len(t) == 2:
+		t[0] = t[1]
+	else:
+		usub = ast.USub()
+		usub.lineno = t.lineno(1)
+		usub.col_offset = -1 # XXX
+		t[0] = ast.UnaryOp(usub, t[2])
+		t[0].lineno = t.lineno(2)
+		t[0].col_offset = -1 # XXX
 
 
 def p_primary(t):

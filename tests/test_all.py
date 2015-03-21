@@ -23,6 +23,8 @@ class TestASTTool:
 def test_assign():
     env = run_code("a:3")
     assert env['a'] == 3
+    env = run_code("a:-3")
+    assert env['a'] == -3
 
 def test_pass():
     run_code('''
