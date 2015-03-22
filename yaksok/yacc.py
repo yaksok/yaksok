@@ -731,3 +731,8 @@ def compile_code(code, file_name=None):
     tree = parser.parse(code, file_name or '<string>', interactive=interactive)
     #logging.debug(ast.dump(tree))
     return compile(tree, file_name or '<string>', 'single' if interactive else 'exec')
+
+def to_ast(code, file_name = None):
+    interactive = file_name is None
+    tree = parser.parse(code, file_name or '<string>', interactive=interactive)
+    return tree

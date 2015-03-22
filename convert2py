@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+from yaksok.codegen import to_source
+from yaksok.yacc import to_ast
+import sys
+import ast
+print(open('yaksok/bootbakyi.py').read())
+print(to_source(to_ast(open(sys.argv[1]).read())))
