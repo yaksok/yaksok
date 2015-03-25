@@ -129,7 +129,7 @@ def ____find_and_call_function(matcher, lenv, genv, functions):
         raise SyntaxError("적용할 수 있는 약속이 여러개입니다.")
 
     func, args = candidates[0]
-    return func(*args)
+    return type(func)(func.__code__, genv)(*args)
 
 
 ____functions = [(____print_one, [('IDENTIFIER', '값'), ('WS',' '), ('STR', '보여주기')])]

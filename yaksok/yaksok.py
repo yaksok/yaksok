@@ -12,9 +12,12 @@ def run_code(code, file_name = None):
     locals_dict = {}
     g = copy.deepcopy(yaksok_globals)
     locals_dict['____functions'] = g['____functions']
-    exec(code, g, locals_dict)
-
-    return locals_dict
+    if file_name is None:
+        exec(code, g, locals_dict)
+        return locals_dict
+    else:
+        exec(code, g, g)
+        return g
 
 
 bootbakyi.____run_code = run_code

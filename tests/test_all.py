@@ -177,3 +177,18 @@ def test_complex_if():
     assert env['천재'] == False
     assert env['비만'] == True
     assert env['나도몰라'] == False
+
+def test_scope():
+    env = run_code('''
+가:3
+다:1
+약속 "테스트"
+    다:가
+    나:4
+테스트
+''', 'file')
+    assert env['가'] == 3
+    assert '나' not in env
+    # TODO
+    # 아직 전역 변수에 쓰는 기능은 구현되지않음
+    #assert env['다'] == 3
