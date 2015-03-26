@@ -5,6 +5,10 @@ import logging
 from .lex import tokens, IndentLexer
 from .ast_tool import transform
 
+target_language = 'python'
+def set_target(lang):
+    global target_language
+    target_language = lang
 
 precedence = (
     #("left", "OR"),
@@ -169,7 +173,7 @@ def validate_function_description(fd_list):
 
 def p_translate_stmt(t):
     '''stmt : TRANSLATE WS function_description NEWLINE SPECIALBLOCK SPECIALBLOCK NEWLINE'''
-    if t[1] == 'python':
+    if t[1] == 'python' and target_language == 'python':
         proto = t[3]
         body = t[6]
         while proto[-1][0] == 'WS':
@@ -187,6 +191,27 @@ except:
     ____functions = []
 
 ____functions.append(({internal_function_name}, {proto}))
+'''.format(**locals())
+
+        t[0] = transform(codes, {}, expose=True)
+
+    elif t[1] == 'javascript' and target_language == 'javascript':
+        proto = t[3]
+        body = t[6]
+        while proto[-1][0] == 'WS':
+            proto.pop()
+        validate_function_description(proto)
+        arg_list = ','.join(item[1] for item in proto if item[0] == 'IDENTIFIER')
+        internal_function_name = gen_sym()
+
+        codes = '''
+def {internal_function_name}({arg_list}):
+    ____BODY = """{body}"""
+
+if typeof(____functions) is 'undefined': 
+    ____functions = [];
+
+____functions.push([{internal_function_name}, {proto}])
 '''.format(**locals())
 
         t[0] = transform(codes, {}, expose=True)
@@ -242,6 +267,19 @@ except:
     ____functions = []
 
 ____functions.append(({internal_function_name}, {proto}))
+'''.format(**locals())
+
+    if target_language == 'javascript':
+        codes = '''
+def {internal_function_name}({arg_list}):
+    ____vars(결과)
+    결과 = None
+    <:suite:>
+    return 결과
+
+if typeof(____functions) is 'undefined': 
+    ____functions = [];
+____functions.push([{internal_function_name}, {proto}])
 '''.format(**locals())
 
     t[0] = transform(codes, dict(suite=t[4]), expose=True)
@@ -492,6 +530,8 @@ def p_call(t):
     arg_s['call_matcher_appender'] = call_matcher_appender
 
     codes = '''____find_and_call_function([{call_matcher_appender}], ____locals(), ____globals(), ____functions)'''.format(**arg_s)
+    if target_language == 'javascript':
+        codes = '''____find_and_call_function([{call_matcher_appender}], null, ____functions)'''.format(**arg_s)
     t[0] = transform(codes, arg_s, expose=True)[0].value
 
 

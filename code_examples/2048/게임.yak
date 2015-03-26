@@ -3,9 +3,19 @@
     범위.append(무언가)
 ***
 
+번역(javascript) 범위 "뒤에" 무언가 "추가"
+***
+    범위.push(무언가)
+***
+
 번역(python) 범위 "길이"
 ***
-    return len(범위)
+    return len(범위);
+***
+
+번역(javascript) 범위 "길이"
+***
+    return 범위.length;
 ***
 
 번역(python) 범위 "뒤집기"
@@ -13,10 +23,23 @@
     return reversed(범위)
 ***
 
+번역(javascript) 범위 "뒤집기"
+***
+    var ret= [];
+    for(var i = 범위.length-1;i >= 0; i--)
+        ret.push(범위[i]);
+    return ret;
+***
+
 번역(python) 범위 "랜덤 선택"
 ***
     import random
     return random.choice(범위)
+***
+
+번역(javascript) 범위 "랜덤 선택"
+***
+    return 범위[Math.floor(Math.random() * 범위.length)];
 ***
 
 약속 판 "빈칸 찾기"
@@ -35,7 +58,7 @@
     위치:판 빈칸 찾기
     만약 위치 = 0 이면
         결과:거짓
-        끝
+        약속 그만
     결과:참
     판[위치]:새_숫자
 

@@ -1,0 +1,8 @@
+#!/usr/bin/env python3
+from yaksok.codegenjs import to_source
+from yaksok.yacc import to_ast, set_target
+import sys
+import ast
+set_target('javascript')
+print(open('yaksok/bootbakyi.js').read())
+print(to_source(to_ast(open(sys.argv[1]).read())))
