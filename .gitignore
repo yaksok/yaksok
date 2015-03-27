@@ -2,3 +2,6 @@
 __pycache__
 .*.swp
 parsetab.py
+code_examples/2048/draw.py
+code_examples/2048/game.py
+code_examples/2048/yaksok
