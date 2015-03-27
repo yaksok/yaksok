@@ -31,6 +31,7 @@ reserved = {
     '그리고':'AND',
     '또는':'OR',
     '이거나':'OR',
+    '이전':'PREV',
 }
 
 tokens = [
@@ -72,6 +73,9 @@ tokens = [
 
     'ENDMARKER',
 ] + list(set(reserved.values()))
+
+# TODO
+tokens.remove('PREV')
 
 def t_SPECIALBLOCK(t):
     r"\*\*\*"
@@ -117,6 +121,10 @@ def t_IDENTIFIER(t):
         t.lexer.inside_defun = True
     if t.type == 'END_BLOCK':
         t.lexer.inside_defun = False
+    #TODO x:이전 x + 1 구현 필요
+    if t.type == 'PREV':
+        return
+
     return t
 
 t_ASSIGN = r':'
