@@ -140,7 +140,7 @@ def p_function_description_item_str(t):
         # 을/를 이/가 등의 조사 지원
         if '/' in element:
             element = element.split('/')
-            body[idx] = ('STRS', element)
+            body[idx] = ('STRS', tuple(element))
         else:
             body[idx] = ('STR', element)
     t[0] = body
@@ -705,7 +705,9 @@ def p_range(t):
 
 def p_atom_list(t):
     '''list : LSQUARE RSQUARE
-            | LSQUARE list_items RSQUARE'''
+            | LSQUARE list_items RSQUARE
+            | LSQUARE list_items COMMA RSQUARE
+            '''
     if len(t) == 3:
         t[0] = ast.List([], ast.Load())
         t[0].lineno = t.lineno(1)
@@ -719,10 +721,10 @@ def p_atom_list(t):
 def p_list_items(t):
     '''list_items : expression
                   | list_items COMMA expression'''
-    if len(t) == 2:
-        t[0] = [t[1]]
-    else:
+    if len(t) == 4:
         t[0] = t[1] + [t[3]]
+    else:
+        t[0] = [t[1]]
 
 
 def p_atom_paren(t):
