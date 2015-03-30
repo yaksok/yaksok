@@ -4,4 +4,6 @@ __pycache__
 parsetab.py
 code_examples/2048/draw.py
 code_examples/2048/game.py
+code_examples/2048/draw.js
+code_examples/2048/game.js
 code_examples/2048/yaksok

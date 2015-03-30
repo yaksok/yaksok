@@ -87,6 +87,7 @@ def t_special_SPECIALBLOCK(t):
     r"(.|[\n])*?\n\*\*\*"
     t.value = t.value[:-3]
     t.lexer.begin('INITIAL')
+    t.lexer.lineno += t.value.count("\n")
     return t
 
 

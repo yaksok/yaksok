@@ -48,6 +48,21 @@ function ____print_one(x) {
 
 function ____find_and_call_function(matcher, scope, functions) {
     var has_variable = function (x) {
+        function rec_lookup(scope, x)
+        {
+            if (typeof(____scope[x]) != 'undefined')
+                return true;
+
+            if (scope.____parent == null)
+                return false;
+
+            return rec_lookup(scope.____parent, x);
+        }
+
+        if (typeof(____global_scope[x]) != 'undefined')
+            return true;
+        return rec_lookup(____scope, x);
+        /*
         try {
             eval(x);
         }
@@ -55,6 +70,7 @@ function ____find_and_call_function(matcher, scope, functions) {
             return false;
         };
         return true;
+        */
     };
 
     var get_variable_value = function (x) {
@@ -172,4 +188,7 @@ function ____find_and_call_function(matcher, scope, functions) {
 }
 
 
+if (typeof(____functions) == 'undefined')
 ____functions = [[____print_one, [['IDENTIFIER', '값'], ['WS',' '], ['STR', '보여주기']]]];
+if (typeof(____scope) == 'undefined')
+    ____global_scope = ____scope = {____parent:null};

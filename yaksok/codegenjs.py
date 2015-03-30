@@ -281,7 +281,12 @@ class SourceGenerator(NodeVisitor):
         self.write(g)
         self.write(' in ')
         self.visit(node.iter)
-        self.write(') { var ')
+        self.write(') {')
+        self.write('____scope["')
+        self.visit(node.target)
+        self.write('"] = 1')
+        self.newline()
+        self.write('var ')
         self.visit(node.target)
         self.write('=')
         self.visit(node.iter)
@@ -393,6 +398,10 @@ class SourceGenerator(NodeVisitor):
             for arg in node.args:
                 write_comma()
                 self.visit(arg)
+            for keyword in node.keywords:
+                write_comma()
+                self.write(keyword.arg + '=')
+                self.visit(keyword.value)
             return
 
         self.visit(node.func)

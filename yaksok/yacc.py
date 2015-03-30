@@ -254,6 +254,7 @@ def p_function_def_stmt(t):
 
     validate_function_description(proto)
     arg_list = ','.join(item[1] for item in proto if item[0] == 'IDENTIFIER')
+    arg_names_to_dict = ','.join('"{}":1'.format(item[1]) for item in proto if item[0] == 'IDENTIFIER')
     internal_function_name = gen_sym()
 
     codes = '''
@@ -272,7 +273,8 @@ ____functions.append(({internal_function_name}, {proto}))
     if target_language == 'javascript':
         codes = '''
 def {internal_function_name}({arg_list}):
-    ____vars(결과)
+    ____vars(결과, ____scope)
+    ____scope = {{____parent:____scope, "결과":1, {arg_names_to_dict} }}
     결과 = None
     <:suite:>
     return 결과
@@ -408,6 +410,13 @@ def p_assign_stmt(t):
     '''stmt : target ASSIGN expression NEWLINE
             | target ASSIGN call NEWLINE
             | target ASSIGN import_call NEWLINE'''
+    if target_language == 'javascript' and isinstance(t[1][0], ast.Name):
+        codes = '____scope["{}"] = 1'.format(t[1][0].id)
+        t[0] = transform(codes, {}, expose=True)
+        t[0].append(ast.Assign(t[1], t[3]))
+        t[0][-1].lineno = t.lineno(1)
+        t[0][-1].col_offset = -1  # XXX
+        return
     t[0] = ast.Assign(t[1], t[3])
     t[0].lineno = t.lineno(1)
     t[0].col_offset = -1  # XXX

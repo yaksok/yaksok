@@ -21,9 +21,146 @@
     return len(str(값))
 ***
 
+번역(python) 가로 세로"에" 크기 색 "면 칠하기"
+***
+    for x in range(크기):
+        for y in range(크기):
+            sc.putpixel(가로+x, 세로+y, 색)
+***
+
 번역(python) 가로 세로"에" 색 "점 찍기"
 ***
     sc.putpixel(가로, 세로, 색)
+***
+
+번역(javascript) 값 "숫자로"
+***
+    return 값*1.0;
+***
+
+번역(javascript) 값 "문자열로"
+***
+    return 값.toString();
+***
+
+번역(javascript) 값 "문자열로 길이"
+***
+    return 값.toString().length;
+***
+
+번역(javascript) 가로 세로"에" 크기 색 "면 칠하기"
+***
+    putrectangle(가로, 세로, 크기, 크기, 색)
+***
+
+번역(javascript) 가로 세로"에" 색 "점 찍기"
+***
+    // ???
+    putpixel(가로, 세로, 색)
+***
+
+# 90~210
+
+번역(python) "로그" 값
+***
+    import math
+    return math.log(값)/math.log(2)
+***
+
+번역(javascript) "로그" 값
+***
+    return Math.log(값)/Math.log(2)
+***
+
+
+번역(python) "HSV" HSV"에서 RGB로"
+***
+    h, s, v = HSV
+    if s == 0:
+        # achromatic (grey)
+        return [v*255,v*255,v*255]
+    h /= 60
+    i = int( h )
+    f = h - i
+    p = v * ( 1 - s )
+    q = v * ( 1 - s * f )
+    t = v * ( 1 - s * ( 1 - f ) )
+    if i == 0:
+        r = v
+        g = t
+        b = p
+    elif i == 1:
+        r = q
+        g = v
+        b = p
+    elif i == 2:
+        r = p
+        g = v
+        b = t
+    elif i == 3:
+        r = p
+        g = q
+        b = v
+    elif i == 4:
+        r = t
+        g = p
+        b = v
+    elif i == 5:
+        r = v
+        g = p
+        b = q
+    return [r*255,g*255,b*255]
+***
+
+번역(javascript) "HSV" HSV"에서 RGB로"
+***
+    var h = HSV[0];
+    var s = HSV[1];
+    var v = HSV[2];
+    var r, g, b;
+    if( s == 0 ) {
+        // achromatic (grey)
+        return [v*255>>0,v*255>>0,v*255>>0];
+    }
+    h /= 60;            // sector 0 to 5
+    var i = Math.floor( h );
+    var f = h - i;          // factorial part of h
+    var p = v * ( 1 - s );
+    var q = v * ( 1 - s * f );
+    var t = v * ( 1 - s * ( 1 - f ) );
+    switch( i ) {
+        case 0:
+            r = v;
+            g = t;
+            b = p;
+            break;
+        case 1:
+            r = q;
+            g = v;
+            b = p;
+            break;
+        case 2:
+            r = p;
+            g = v;
+            b = t;
+            break;
+        case 3:
+            r = p;
+            g = q;
+            b = v;
+            break;
+        case 4:
+            r = t;
+            g = p;
+            b = v;
+            break;
+        default:        // case 5:
+            r = v;
+            g = p;
+            b = q;
+            break;
+    }
+    return [r*255>>0,g*255>>0,b*255>>0];
 ***
 
 약속 가로 세로"에" 글자색 숫자 "그리기"
@@ -59,6 +196,15 @@
     가로-추가간격            세로-추가간격            부터 선길이 의 세로선 그리기
     가로-추가간격            세로+추가간격+타일간격-2 부터 선길이 의 가로선 그리기
     가로+추가간격+타일간격-2 세로-추가간격            부터 선길이 의 세로선 그리기
+
+    H:210+120-((로그 숫자)-1)*22
+    만약 H < 0 이면
+        H:0
+    배경색:HSV ([H, 1, 1]) 에서 RGB로
+    만약 숫자 = 2048 이면
+        배경색:[255, 255, 0]
+    배경크기:타일간격+추가간격*2-3
+    가로-추가간격+1 세로-추가간격+1 에 배경크기 배경색 면 칠하기
     만약 나타남 이면
         약속 그만
 
