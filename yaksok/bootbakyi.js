@@ -9,6 +9,12 @@ ____range = function(s, e) {
 };
 ____eval = eval;
 
+if (typeof String.prototype.endsWith !== 'function') {
+    String.prototype.endsWith = function(suffix) {
+        return this.indexOf(suffix, this.length - suffix.length) !== -1;
+    };
+}
+
 function ____slice(array, from, to, step) {
     if (from===null) from=0;
     if (to===null) to=array.length;
