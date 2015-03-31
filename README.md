@@ -1,1 +1,1 @@
-    $ python3 yaksok/yaksok.py codes/hello.yak
+    $ python3 -m yaksok code_examples/hello.yak
