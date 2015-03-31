@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
+import os
+import sys
+
 from yaksok.codegenjs import to_source
 from yaksok.yacc import to_ast, set_target
-import sys
-import ast
+
+
 set_target('javascript')
-print(open('yaksok/bootbakyi.js').read())
+base_path = os.path.abspath(os.path.dirname(__file__))
+print(open(os.path.join(base_path, 'yaksok/bootbakyi.js')).read())
 print(to_source(to_ast(open(sys.argv[1]).read())))
