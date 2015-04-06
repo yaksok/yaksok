@@ -8,4 +8,7 @@ setup(
             'yaksok = yaksok.yaksok:main',
         ],
     },
+    install_requires=[
+        'ply',
+    ],
 )
