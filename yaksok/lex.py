@@ -1,6 +1,6 @@
 # coding: utf8
 
-import ply.lex
+from .ply import lex
 import logging
 
 TAB_SIZE = 8
@@ -260,7 +260,7 @@ def track_tokens_filter(lexer, tokens):
 
 
 def _new_token(type, lineno):
-    tok = ply.lex.LexToken()
+    tok = lex.LexToken()
     tok.type = type
     tok.value = None
     tok.lineno = lineno
@@ -380,7 +380,7 @@ def filter(lexer, add_endmarker = True):
 
 class IndentLexer(object):
     def __init__(self, debug=0, optimize=0, lextab='lextab', reflags=0):
-        self.lexer = ply.lex.lex(debug=debug, optimize=optimize, lextab=lextab, reflags=reflags)
+        self.lexer = lex.lex(debug=debug, optimize=optimize, lextab=lextab, reflags=reflags)
         self.token_stream = None
 
     def input(self, s, add_endmarker=True):

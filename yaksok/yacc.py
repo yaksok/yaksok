@@ -749,11 +749,11 @@ def p_error(t):
 
 class Parser:
     def __init__(self, lexer = None):
-        import ply.yacc
+        from .ply import yacc
         if lexer is None:
             lexer = IndentLexer()
         self.lexer = lexer
-        self.parser = ply.yacc.yacc(start="file_input_end", debug=False)
+        self.parser = yacc.yacc(start="file_input_end", debug=False)
         del errors[:]
 
 
