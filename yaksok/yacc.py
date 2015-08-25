@@ -767,6 +767,9 @@ class Parser:
                     print('{}\t{}'.format(file_name, msg))
                 else:
                     print('{}:{}\t{}'.format(file_name, line, msg))
+            del errors[:]
+            self.parser.restart()
+            self.lexer = IndentLexer()
             raise SyntaxError
         if interactive:
             return ast.Interactive(tree)
