@@ -21,6 +21,7 @@ def run_code(code, file_name = None):
 
 
 bootbakyi.____run_code = run_code
+bootbakyi.____libpath = os.path.join(os.path.split(__file__)[0], 'modules')
 
 
 yaksok_globals = {k:getattr(bootbakyi, k) for k in dir(bootbakyi)}

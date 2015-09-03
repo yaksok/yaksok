@@ -7,10 +7,24 @@ ____range = range
 ____eval = eval
 ____modules = {}
 
+def ____search_module_file(name):
+    import os
+    if os.path.exists(name + '.yak'):
+        return name + '.yak'
+    try:
+        libpath = os.path.join(____libpath, name+'.yak')
+        if os.path.exists(libpath):
+            return libpath
+    except:
+        raise
+
+    return name + '.yak'
+
 def ____getmodule(name):
     # TODO sys.modules 같은 import된 모듈 저장소가 필요
     if name not in ____modules:
-        ____modules[name] = ____run_code(open(name + '.yak').read(), name+'.yak')
+        path = ____search_module_file(name)
+        ____modules[name] = ____run_code(open(path).read(), name+'.yak')
     return ____modules[name]
 
 

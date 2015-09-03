@@ -192,3 +192,9 @@ def test_scope():
     # TODO
     # 아직 전역 변수에 쓰는 기능은 구현되지않음
     #assert env['다'] == 3
+
+def test_module():
+    env = run_code('''
+가:@랜덤 1~1 랜덤 선택하기
+''', 'file')
+    assert env['가'] == 1
