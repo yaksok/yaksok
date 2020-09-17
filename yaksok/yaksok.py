@@ -39,7 +39,7 @@ def main():
         import logging
         logging.basicConfig(level=logging.DEBUG)
     if args.file_name:
-        code = open(args.file_name).read()
+        code = open(args.file_name, encoding='UTF8').read()
         run_code(code, args.file_name)
         return
     while True:

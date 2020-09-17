@@ -24,7 +24,7 @@ def ____getmodule(name):
     # TODO sys.modules 같은 import된 모듈 저장소가 필요
     if name not in ____modules:
         path = ____search_module_file(name)
-        ____modules[name] = ____run_code(open(path).read(), name+'.yak')
+        ____modules[name] = ____run_code(open(path, encoding='UTF8').read(), name+'.yak')
     return ____modules[name]
 
 
