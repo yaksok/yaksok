@@ -42,6 +42,9 @@ def ____subscript(l, x):
 def ____print_one(x):
     print(x)
 
+def ____exit_noprob():
+    exit(0)
+
 def ____find_and_call_function(matcher, lenv, genv, functions, cache={}):
     #key = tuple(x if x[0] != 'EXPR' else ('EXPR', None) for x in matcher), tuple(tuple(x[1]) for x in functions), tuple(sorted(lenv.keys())), tuple(sorted(genv.keys()))
 
@@ -161,4 +164,4 @@ def ____find_and_call_function(matcher, lenv, genv, functions, cache={}):
     return type(func)(func.__code__, genv)(*args)
 
 
-____functions = [(____print_one, [('IDENTIFIER', '값'), ('WS',' '), ('STR', '보여주기')])]
+____functions = [(____print_one, [('IDENTIFIER', '값'), ('WS',' '), ('STR', '보여주기')]), (____exit_noprob,[('STR','나가기')])]

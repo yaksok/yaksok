@@ -4,6 +4,25 @@
     return random.choice(배열)
 ***
 
+번역(python) 이거 요거 "사이에 랜덤 정수 선택하기"
+***
+    import random
+    return random.randint(이거, 요거)
+***
+
+번역(python) 이거 요거 "사이에 랜덤 실수 선택하기"
+***
+    import random
+    return random.uniform(이거, 요거)
+***
+
+번역(python) 배열 "랜덤 섞기"
+***
+    import random
+    random.shuffle(배열)
+    return 배열
+***
+
 번역(javascript) 배열 "랜덤 선택하기"
 ***
     return 배열[Math.floor(Math.random() * 배열.length)];
