@@ -774,7 +774,7 @@ class Parser:
         if interactive:
             return ast.Interactive(tree)
         else:
-            return ast.Module(tree)
+            return ast.Module(tree, type_ignores=[])
 
 
 parser = Parser()
