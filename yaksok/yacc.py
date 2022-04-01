@@ -649,7 +649,7 @@ def p_subscription(t):
     func.lineno = t.lineno(1)
     func.col_offset = -1  # XXX
 
-    t[0] = ast.Call(func, [t[1], index], [], None, None)
+    t[0] = ast.Call(func, [t[1], index], [])#, None, None)
     t[0].lineno = t.lineno(1)
     t[0].col_offset = -1  # XXX
 
@@ -707,7 +707,7 @@ def p_range(t):
     func.lineno = t.lineno(2)
     func.col_offset = -1  # XXX
     add_one = make_add_one(t, 3)
-    t[0] = ast.Call(func, [t[1], add_one], [], None, None)
+    t[0] = ast.Call(func, [t[1], add_one], [])#, None, None)
     t[0].lineno = t.lineno(2)
     t[0].col_offset = -1  # XXX
 

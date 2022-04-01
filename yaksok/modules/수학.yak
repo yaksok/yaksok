@@ -1,0 +1,52 @@
+번역(python) 값 "을 올림"
+***
+    import math
+    return math.ceil(값)
+***
+
+번역(python) 값 "의 절댓값"
+***
+    import math
+    return math.fabs(값)
+***
+
+번역(python) 값 "을 내림"
+***
+    import math
+    return math.floor(값)
+***
+
+번역(python) 아래 "를 밑으로하는" 위 "로그 값"
+***
+    import math
+    return math.log(위, 아래)
+***
+
+번역(python) 값 "에" 몇 "승"
+***
+    import math
+    return math.pow(값, 몇)
+***
+
+번역(python) 값 "의 제곱근"
+***
+    import math
+    return math.sqrt(값)
+***
+
+번역(python) "원주율"
+***
+    import math
+    return math.pi
+***
+
+번역(python) "자연 상수"
+***
+    import math
+    return math.e
+***
+번역(python) "타우"
+***
+    import math
+    return math.tau
+***
